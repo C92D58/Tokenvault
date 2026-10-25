@@ -159,7 +159,7 @@ struct LockView: View {
                 .resizable()
                 .interpolation(.high)
                 .aspectRatio(1, contentMode: .fill)
-                .scaleEffect(1.2)
+                .scaleEffect(1.55)
         } else {
             Rectangle()
                 .fill(DS.Color.accentGradient)
