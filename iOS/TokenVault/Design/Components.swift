@@ -10,17 +10,26 @@ struct CardSurface: ViewModifier {
     var raised = false
 
     func body(content: Content) -> some View {
-        content
-            .padding(padding)
-            .background(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(raised ? Theme.surfaceRaised : Theme.surface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .stroke(Theme.hairline, lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
+        // iOS 26+: real Liquid Glass, so cards refract the bloom behind them. Older systems keep
+        // the flat surface + hairline, which is the same silhouette without the material cost.
+        if #available(iOS 26.0, *) {
+            content
+                .padding(padding)
+                .glassEffect(.regular, in: .rect(cornerRadius: radius, style: .continuous))
+                .shadow(color: .black.opacity(0.10), radius: 12, y: 5)
+        } else {
+            content
+                .padding(padding)
+                .background(
+                    RoundedRectangle(cornerRadius: radius, style: .continuous)
+                        .fill(raised ? Theme.surfaceRaised : Theme.surface)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: radius, style: .continuous)
+                        .stroke(Theme.hairline, lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
+        }
     }
 }
 
@@ -144,6 +153,8 @@ struct RoundIconButton: View {
 }
 
 /// A segmented control whose selected pill slides instead of cutting.
+/// Small pill-shaped selector: a glass capsule rail with a lens that slides between options.
+/// Deliberately compact — 30pt tall, 6pt inner padding — so it reads as a control, not a card.
 struct SlidingSegmented: View {
     let items: [String]
     @Binding var selection: Int
@@ -158,32 +169,42 @@ struct SlidingSegmented: View {
                     withAnimation(Theme.Motion.snap) { selection = index }
                 } label: {
                     Text(L(title))
-                        .font(.system(size: 13, weight: selection == index ? .semibold : .medium))
+                        .font(.system(size: 12.5, weight: selection == index ? .semibold : .medium))
                         .foregroundStyle(selection == index ? Theme.textPrimary : Theme.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 6)
+                        .contentShape(Capsule())
                         .background {
-                            if selection == index {
-                                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                    .fill(Theme.surface)
-                                    .shadow(color: .black.opacity(0.08), radius: 3, y: 1)
-                                    .matchedGeometryEffect(id: "segment", in: namespace)
-                            }
+                            if selection == index { lens }
                         }
-                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(3)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+        .background { rail }
+    }
+
+    private var lens: some View {
+        Capsule()
+            .fill(Theme.textPrimary.opacity(0.10))
+            .overlay(Capsule().stroke(.white.opacity(0.18), lineWidth: 0.8))
+            .shadow(color: .black.opacity(0.16), radius: 4, y: 1)
+            .matchedGeometryEffect(id: "segment", in: namespace)
+    }
+
+    @ViewBuilder
+    private var rail: some View {
+        if #available(iOS 26.0, *) {
+            Color.clear.glassEffect(.regular.interactive(), in: .capsule)
+        } else {
+            Capsule()
                 .fill(Theme.surfaceRaised)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Theme.hairline, lineWidth: 1)
-        )
+                .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
+        }
     }
 }
 

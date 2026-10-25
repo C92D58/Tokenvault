@@ -158,6 +158,24 @@ struct DashboardBar: View {
 // MARK: - Token Generator + JWT Decoder
 
 /// Token Generator + JWT Decoder
+enum GenTab: String, CaseIterable {
+    case generate, jwt
+
+    var title: String {
+        switch self {
+        case .generate: return "隨機生成"
+        case .jwt: return "JWT 解碼"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .generate: return "dice"
+        case .jwt: return "doc.text.magnifyingglass"
+        }
+    }
+}
+
 struct TokenGeneratorView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var generatedToken = ""
@@ -165,6 +183,7 @@ struct TokenGeneratorView: View {
     @State private var includeSpecial = true
     @State private var jwtInput = ""
     @State private var jwtOutput = ""
+    @State private var genTab: GenTab = .generate
     @State private var copied = false
 
     var body: some View {
@@ -188,13 +207,22 @@ struct TokenGeneratorView: View {
 
             Divider()
 
-            TabView {
-                generateTab
-                    .tabItem { Label("隨機生成", systemImage: "dice") }
-                jwtTab
-                    .tabItem { Label("JWT 解碼", systemImage: "doc.text.magnifyingglass") }
+            VStack(spacing: 0) {
+                PillTabBar(
+                    items: GenTab.allCases,
+                    title: \.title,
+                    icon: \.icon,
+                    selection: $genTab
+                )
+                Divider().opacity(0.5)
+                Group {
+                    switch genTab {
+                    case .generate: generateTab
+                    case .jwt: jwtTab
+                    }
+                }
+                .padding(16)
             }
-            .padding(16)
         }
         .frame(minWidth: 460, minHeight: 360)
         .frame(width: 480, height: 400)

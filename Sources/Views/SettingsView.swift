@@ -11,19 +11,57 @@ struct SettingsView: View {
     @State var showingRestore = false
     @State private var selectedTab: SettingsTab = .general
 
-    private enum SettingsTab: Hashable { case general, sync, security, log }
+    private enum SettingsTab: Hashable, CaseIterable {
+        case general, sync, security, log
+
+        var title: String {
+            switch self {
+            case .general: return "一般"
+            case .sync: return "同步"
+            case .security: return "安全"
+            case .log: return "記錄"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .general: return "gearshape"
+            case .sync: return "arrow.triangle.capsulepath"
+            case .security: return "lock.shield"
+            case .log: return "list.bullet.rectangle"
+            }
+        }
+    }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            generalTab.tabItem { Label("一般", systemImage: "gearshape") }.tag(SettingsTab.general)
-            syncTab.tabItem { Label("同步", systemImage: "arrow.triangle.capsulepath") }.tag(SettingsTab.sync)
-            securityTab.tabItem { Label("安全", systemImage: "lock.shield") }.tag(SettingsTab.security)
-            logTab.tabItem { Label("記錄", systemImage: "list.bullet.rectangle") }.tag(SettingsTab.log)
+        // A system TabView is an NSTabView here and paints a blue focus ring around its tab bar as
+        // soon as Tab walks through the window. These are page switches, not keyboard targets, so
+        // the bar is drawn as plain, non-focusable buttons.
+        VStack(spacing: 0) {
+            tabBar
+            Divider().opacity(0.5)
+            Group {
+                switch selectedTab {
+                case .general: generalTab
+                case .sync: syncTab
+                case .security: securityTab
+                case .log: logTab
+                }
+            }
         }
         .frame(minWidth: 500, minHeight: 500)
         .onReceive(NotificationCenter.default.publisher(for: .showSettingsSyncTab)) { _ in
-            selectedTab = .sync
+            withAnimation(.easeOut(duration: 0.16)) { selectedTab = .sync }
         }
+    }
+
+    private var tabBar: some View {
+        PillTabBar(
+            items: SettingsTab.allCases,
+            title: \.title,
+            icon: \.icon,
+            selection: $selectedTab
+        )
     }
 
     // MARK: - General

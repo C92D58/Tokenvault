@@ -17,6 +17,7 @@
 		347D858772EC78585EDC4562 /* KeyboardHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D155E64D4661CBFF943573 /* KeyboardHUD.swift */; };
 		423EE0948939580CAFF03437 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D99676E8B748146EA77A013 /* BackupService.swift */; };
 		48ACAB2CADFB686998D28BC5 /* SpotlightSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CAF886AD57F127F9FDF3B6 /* SpotlightSearch.swift */; };
+		5D3D32FF74530AD35ECD1B9C /* PillTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22143CB9CD52094593FA8887 /* PillTabBar.swift */; };
 		5EB5AF5A761EE20BF06617FC /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286B3A0F8306A67E56077391 /* AboutView.swift */; };
 		61254B0552BE69A6ABFC456B /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED90AA59D3B14E6B0FE7F129 /* EncryptionService.swift */; };
 		6535646CF7DDE70C5217350D /* ToastService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5AD6B48853C877CBFF7CFA /* ToastService.swift */; };
@@ -49,6 +50,7 @@
 		0E66D54B5BA7A264B3E5AB87 /* TokenItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenItem.swift; sourceTree = "<group>"; };
 		0F9445983444A460402AB30A /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		186DC18E6F5F519E7EF6EE03 /* VisualEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualEffects.swift; sourceTree = "<group>"; };
+		22143CB9CD52094593FA8887 /* PillTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillTabBar.swift; sourceTree = "<group>"; };
 		2405BFB2AA6AD80BBDCF9BB9 /* ICloudBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudBackupService.swift; sourceTree = "<group>"; };
 		286B3A0F8306A67E56077391 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		28B2E7647B6836F6C12BF1F7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -98,6 +100,14 @@
 				7B5AD6B48853C877CBFF7CFA /* ToastService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		156E683331321B5D84FCDFB4 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				22143CB9CD52094593FA8887 /* PillTabBar.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		1C1715227DEC72726780C6AC /* Resources */ = {
@@ -177,6 +187,7 @@
 				28B2E7647B6836F6C12BF1F7 /* SettingsView.swift */,
 				94CAF886AD57F127F9FDF3B6 /* SpotlightSearch.swift */,
 				51F298C8615A073248170EE0 /* TokenEditor.swift */,
+				156E683331321B5D84FCDFB4 /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -314,6 +325,7 @@
 				DAC06EAF4BB633819B7A74A1 /* LockView.swift in Sources */,
 				E4F59CE00D4CE0CC5689128D /* MainView.swift in Sources */,
 				BE9AB1791F5EC4DA5E27D192 /* NotificationService.swift in Sources */,
+				5D3D32FF74530AD35ECD1B9C /* PillTabBar.swift in Sources */,
 				F0B3918AC15D051DDA8385E5 /* PopoverView.swift in Sources */,
 				92CDD29EF532F4C2B0CA4361 /* SecurityLog.swift in Sources */,
 				2EE264BF88A7E8FF55EED8D9 /* SettingsService.swift in Sources */,

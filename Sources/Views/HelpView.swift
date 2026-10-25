@@ -1,13 +1,33 @@
 import SwiftUI
 
 struct HelpView: View {
+    /// The system `TabView` is an NSTabView on macOS and draws the blue keyboard focus ring around
+    /// its tab bar the moment you press Tab. This window is read-only help text — nothing in it
+    /// should ever be focusable — so the tab bar is drawn here instead.
+    @State private var tab: HelpTab = .shortcuts
+
     var body: some View {
-        TabView {
-            shortcutsTab.tabItem { Label("快捷鍵", systemImage: "command") }
-            guideTab.tabItem { Label("使用說明", systemImage: "book") }
-            securityTab.tabItem { Label("安全性", systemImage: "lock.shield") }
+        VStack(spacing: 0) {
+            tabBar
+            Divider().opacity(0.5)
+            content
         }
         .frame(minWidth: 500, minHeight: 460)
+    }
+
+    // MARK: - Tab bar
+
+    private var tabBar: some View {
+        PillTabBar(items: HelpTab.allCases, title: \.title, icon: \.icon, selection: $tab)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch tab {
+        case .shortcuts: shortcutsTab
+        case .guide: guideTab
+        case .security: securityTab
+        }
     }
 
     // MARK: - Shortcuts
@@ -121,6 +141,28 @@ struct HelpView: View {
             }
             .font(.system(size: 12))
             .foregroundColor(.secondary)
+        }
+    }
+}
+
+enum HelpTab: String, CaseIterable, Identifiable {
+    case shortcuts, guide, security
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .shortcuts: return "快捷鍵"
+        case .guide: return "使用說明"
+        case .security: return "安全性"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .shortcuts: return "command"
+        case .guide: return "book"
+        case .security: return "lock.shield"
         }
     }
 }
