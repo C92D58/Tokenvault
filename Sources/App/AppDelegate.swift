@@ -86,6 +86,7 @@ extension AppDelegate: NSApplicationDelegate {
         if runSyncWriteProbeIfRequested() { return }
         if MainActor.assumeIsolated({ runRenderLockIfRequested() }) { return }
         if MainActor.assumeIsolated({ runSyncFolderSelfTestIfRequested() }) { return }
+        if MainActor.assumeIsolated({ runRenderHelpIfRequested() }) { return }
 
         if let dir = Self.storeShotDirectory {
             // Store screenshot run: same windows, real pixels, no prompts, no lock screen.
@@ -750,6 +751,52 @@ extension AppDelegate {
             }
         }
         return true
+    }
+}
+
+
+// MARK: - Help window snapshot (`--render-help`)
+
+extension AppDelegate {
+    /// Renders HelpView offscreen so the tab bar can be inspected without screen-recording rights.
+    @MainActor
+    func runRenderHelpIfRequested() -> Bool {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--render-help"), i + 1 < args.count else { return false }
+        let path = args[i + 1]
+        // ImageRenderer has no window: pin the appearance so materials, .secondary and glass resolve
+        // against the app's dark scheme instead of a white canvas.
+        NSApp.appearance = NSAppearance(named: .darkAqua)
+        let view = ZStack {
+            Color(nsColor: .windowBackgroundColor)
+            HelpView()
+        }
+        .frame(width: 520, height: 500)
+        .environment(\.colorScheme, .dark)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        guard let image = renderer.nsImage,
+              let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff),
+              let png = rep.representation(using: .png, properties: [:]) else {
+            print("SELFTEST help render failed")
+            exit(1)
+        }
+        var target = URL(fileURLWithPath: path)
+        do {
+            try png.write(to: target)
+        } catch {
+            target = FileManager.default
+                .url(forUbiquityContainerIdentifier: ICloudSyncService.containerIdentifier)?
+                .appendingPathComponent("Documents/tv-help.png")
+                ?? URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("tv-help.png")
+            do { try png.write(to: target) } catch {
+                print("SELFTEST help render write failed: \(error)")
+                exit(1)
+            }
+        }
+        print("SELFTEST help rendered \(target.path)")
+        exit(0)
     }
 }
 
