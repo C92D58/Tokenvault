@@ -225,7 +225,8 @@ extension AppDelegate: NSApplicationDelegate {
     }
 
     private func setupMainWindow() {
-        let hosting = NSHostingController(rootView: MainView(store: store))
+        // One place to kill the blue Tab focus rings for the whole window.
+        let hosting = NSHostingController(rootView: MainView(store: store).focusEffectDisabled())
         mainWindow = NSWindow(contentViewController: hosting)
         mainWindow?.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         applyGlassStyle(mainWindow, title: "TokenVault",
@@ -241,7 +242,7 @@ extension AppDelegate: NSApplicationDelegate {
 
     @objc func showSettings() {
         if settingsWindow == nil {
-            settingsWindow = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
+            settingsWindow = NSWindow(contentViewController: NSHostingController(rootView: SettingsView().focusEffectDisabled()))
             settingsWindow?.styleMask = [.titled, .closable, .fullSizeContentView]
             applyGlassStyle(settingsWindow, title: L("設定"),
                             size: NSSize(width: 480, height: 520),
@@ -265,7 +266,7 @@ extension AppDelegate: NSApplicationDelegate {
 
     @objc func showAbout() {
         if aboutWindow == nil {
-            let win = NSWindow(contentViewController: NSHostingController(rootView: AboutView()))
+            let win = NSWindow(contentViewController: NSHostingController(rootView: AboutView().focusEffectDisabled()))
             win.styleMask = [.titled, .closable, .fullSizeContentView]
             aboutWindow = win
             applyGlassStyle(aboutWindow, title: L("關於 TokenVault"),

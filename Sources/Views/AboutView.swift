@@ -79,6 +79,9 @@ struct AboutView: View {
                         .foregroundStyle(.tertiary)
                 }
                 .font(.system(size: 11))
+                // Tab 鍵走過連結時 macOS 會畫一圈藍色 focus ring；整頁其他控制項都關了，這裡也關，
+                // 否則只有 footer 這兩個字會突然亮起來。
+                .focusEffectDisabled()
             }
             .padding(.bottom, 22)
         }
