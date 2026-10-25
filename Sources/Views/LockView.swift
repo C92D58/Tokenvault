@@ -30,12 +30,6 @@ struct LockView: View {
                         .scaleEffect(pulse && isActive ? 1.15 : 1.0)
                         .opacity(pulse && isActive ? 0.6 : 0.2)
 
-                    // Ring
-                    Circle()
-                        .stroke(DS.Color.accentGradient, lineWidth: 2)
-                        .frame(width: 100, height: 100)
-                        .opacity(0.2)
-
                     // The mark IS the circle: a full-bleed disc in the icon's colours with the
                     // shield drawn at a size that reads at a glance. No card, no inner plate.
                     Circle()
