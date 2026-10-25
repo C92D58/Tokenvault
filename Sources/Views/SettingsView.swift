@@ -114,10 +114,21 @@ struct SettingsView: View {
                         Button("從備份還原…") { showingRestore = true }
                             .buttonStyle(.bordered).controlSize(.small)
                             .disabled(!settings.iCloudSyncEnabled || !backupService.isAvailable)
+
+                        Button("在 Finder 中顯示") {
+                            // Apple hides app containers from Finder's iCloud 雲盤 unless the app is
+                            // document-based, so give the folder a way to be seen and inspected.
+                            guard let file = ICloudSyncService.shared.fileURL else { return }
+                            let url = FileManager.default.fileExists(atPath: file.path)
+                                ? file : file.deletingLastPathComponent()
+                            NSWorkspace.shared.activateFileViewerSelecting([url])
+                        }
+                        .buttonStyle(.bordered).controlSize(.small)
+                        .disabled(!settings.iCloudSyncEnabled || !syncService.isAvailable)
                     }
                     .sheet(isPresented: $showingRestore) { restoreSheet }
 
-                    Text("整份加密後寫入 iCloud Drive/TokenVault/vault.tvsync：同一 Apple ID 的 Mac 與 iPhone 自動雙向合併，逐筆以修改時間為準。金鑰存在 iCloud 鑰匙圈，加密備份另保留最近 7 份。")
+                    Text("整份加密後寫入 iCloud Drive/TokenVault/vault.tvsync：同一 Apple ID 的 Mac 與 iPhone 自動雙向合併，逐筆以修改時間為準。金鑰存在 iCloud 鑰匙圈，加密備份另保留最近 7 份。這是 App 專屬容器，用「在 Finder 中顯示」可直接打開。")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                 } header: {
                     Text("iCloud".uppercased()).font(.system(size: 11, weight: .semibold))

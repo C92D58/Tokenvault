@@ -69,6 +69,20 @@
     </array>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+    <!-- Make the app's iCloud Drive folder visible in Finder › iCloud 雲盤, not just inside
+         ~/Library/Mobile Documents. Same container as the iPhone. -->
+    <key>NSUbiquitousContainers</key>
+    <dict>
+        <key>iCloud.dev.wahsun.tokenvault</key>
+        <dict>
+            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
+            <true/>
+            <key>NSUbiquitousContainerName</key>
+            <string>TokenVault</string>
+            <key>NSUbiquitousContainerSupportedFolderLevels</key>
+            <string>Any</string>
+        </dict>
+    </dict>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
         <string>arm64</string>
