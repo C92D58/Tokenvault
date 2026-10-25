@@ -198,6 +198,9 @@ final class ICloudSyncService: ObservableObject {
     private var query: NSMetadataQuery?
     private var observers: [NSObjectProtocol] = []
     private var pending: DispatchWorkItem?
+    /// Size + modification date of the sync file as last read or written; used to ignore metadata
+    /// notifications that do not correspond to a new payload.
+    private var lastSeen: (size: Int, date: Date)?
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -339,6 +342,14 @@ final class ICloudSyncService: ObservableObject {
 
     private func remoteChanged() {
         guard isEnabled, Date() >= suppressRemoteUntil else { return }
+        // The query fires for every change in the scope (including our own backup snapshots), so
+        // check the file itself: same size and modification date means nothing to pull.
+        guard let url = fileURL,
+              let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+        else { return }
+        let stamp = (values.fileSize ?? 0, values.contentModificationDate ?? .distantPast)
+        if let last = lastSeen, last == stamp { return }
+        lastSeen = stamp
         print("[sync] iCloud reported a change")
         requestSync(after: 0.4)
     }
