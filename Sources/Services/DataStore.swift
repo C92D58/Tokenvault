@@ -1,8 +1,9 @@
 import Foundation
 import Combine
 
-/// Central data store with iCloud Drive sync.
-/// All token values are AES-256-GCM encrypted before storage.
+/// Central data store.
+/// All token values are AES-256-GCM encrypted before storage; iCloud sync ships plaintext only
+/// inside the sealed `vault.tvsync` payload (see `ICloudSyncService`).
 final class DataStore: ObservableObject {
     @Published var groups: [TokenGroup] = []
     @Published var allTokens: [TokenItem] = []
@@ -16,6 +17,9 @@ final class DataStore: ObservableObject {
     private var fileURL: URL!
     private var cancellables = Set<AnyCancellable>()
     private var saveWorkItem: DispatchWorkItem?
+    /// True while remote records are being written into this vault. Suppresses the change
+    /// subscriptions, so an incoming row is not stamped as a local edit (that would ping-pong).
+    private var isApplyingRemote = false
 
     init() {
         // Inside the app's own Application Support directory.
@@ -80,11 +84,14 @@ final class DataStore: ObservableObject {
     }
 
     /// Notify SwiftUI and schedule a debounced save.
-    private func notify() {
+    private func notify(touching token: TokenItem? = nil) {
+        guard !isApplyingRemote else { return }
+        token?.touch()
         objectWillChange.send()
         save()
-        if SettingsService.shared.iCloudBackupEnabled {
+        if SettingsService.shared.iCloudSyncEnabled {
             ICloudBackupService.shared.scheduleBackup { [weak self] in self?.allTokens ?? [] }
+            ICloudSyncService.shared.requestSync()
         }
     }
 
@@ -94,12 +101,12 @@ final class DataStore: ObservableObject {
     private func rebuildSubscriptions() {
         cancellables.removeAll()
         for t in allTokens {
-            t.objectWillChange.sink { [weak self] _ in self?.notify() }.store(in: &cancellables)
+            t.objectWillChange.sink { [weak self] _ in self?.notify(touching: t) }.store(in: &cancellables)
         }
         for g in groups {
             g.objectWillChange.sink { [weak self] _ in self?.notify() }.store(in: &cancellables)
             for t in g.tokens {
-                t.objectWillChange.sink { [weak self] _ in self?.notify() }.store(in: &cancellables)
+                t.objectWillChange.sink { [weak self] _ in self?.notify(touching: t) }.store(in: &cancellables)
             }
         }
     }
@@ -109,15 +116,15 @@ final class DataStore: ObservableObject {
     func addToken(_ t: TokenItem, to group: TokenGroup?) {
         group?.tokens.append(t); allTokens.append(t)
         rebuildSubscriptions()
-        notify()
+        notify(touching: t)
     }
     func deleteToken(_ t: TokenItem) {
         allTokens.removeAll { $0.id == t.id }
         for g in groups { g.tokens.removeAll { $0.id == t.id } }
         rebuildSubscriptions()
-        notify()
+        notify(touching: t)
     }
-    func toggleFav(_ t: TokenItem) { t.isFavorite.toggle(); notify() }
+    func toggleFav(_ t: TokenItem) { t.isFavorite.toggle(); notify(touching: t) }
 
     /// Soft-delete: move to trash (30-day recovery window). Supports undo.
     func softDeleteToken(_ t: TokenItem) {
@@ -137,7 +144,7 @@ final class DataStore: ObservableObject {
             ToastService.shared.show("已復原刪除「\(t.name)」", icon: "arrow.uturn.backward")
         }
         undoManager.setActionName("刪除「\(t.name)」")
-        notify()
+        notify(touching: t)
     }
 
     /// Restore a soft-deleted token. Supports undo.
@@ -149,7 +156,7 @@ final class DataStore: ObservableObject {
             ToastService.shared.show("已復原", icon: "arrow.uturn.backward")
         }
         undoManager.setActionName("恢復「\(t.name)」")
-        notify()
+        notify(touching: t)
     }
 
     /// Permanently delete tokens that were soft-deleted > 30 days ago.
@@ -222,6 +229,50 @@ final class DataStore: ObservableObject {
         HealthCheckService.findDuplicates(in: allTokens)
     }
 
+    // MARK: - iCloud sync
+
+    var syncGroups: [SyncGroup] {
+        groups.map { SyncGroup(id: $0.id, name: $0.name, icon: $0.icon, sortOrder: $0.sortOrder) }
+    }
+
+    /// One full round trip against iCloud Drive: pull what other devices wrote, merge it in, push
+    /// whatever this Mac knows that iCloud does not. Safe to call at any time; `ICloudSyncService`
+    /// coalesces bursts and never writes a file it cannot read.
+    func synchronizeWithICloud() {
+        isApplyingRemote = true
+        let outcome = ICloudSyncService.shared.synchronize(tokens: allTokens, groups: syncGroups)
+        if let outcome {
+            let merged = Set(outcome.tokens.map(\.id))
+            allTokens.removeAll { !merged.contains($0.id) }
+            for token in outcome.tokens where !allTokens.contains(where: { $0.id == token.id }) {
+                allTokens.append(token)
+            }
+            for group in outcome.groups where !groups.contains(where: { $0.id == group.id }) {
+                groups.append(TokenGroup(id: group.id, name: group.name, icon: group.icon,
+                                         sortOrder: group.sortOrder))
+            }
+            // Membership follows `groupID`, so a row deleted or restored on another device lands in
+            // the right list without a second merge rule.
+            var structural = false
+            for group in groups {
+                let next = allTokens.filter { $0.groupID == group.id && !$0.isDeleted }
+                if group.tokens.map(\.id) != next.map(\.id) {
+                    group.tokens = next
+                    structural = true
+                }
+            }
+            if structural { rebuildSubscriptions() }
+        }
+        isApplyingRemote = false
+
+        guard let outcome, outcome.applied > 0 || outcome.written || outcome.groups.count != groups.count else {
+            return
+        }
+        rebuildSubscriptions()
+        objectWillChange.send()
+        save()
+    }
+
     // MARK: - Security helpers
 
     /// All encrypted values — for verifying zero-knowledge claim.
@@ -234,6 +285,6 @@ final class DataStore: ObservableObject {
         t.lastUsedAt = Date()
         t.copyCount += 1
         SecurityLogService.shared.log(.copied, tokenID: t.id, name: t.name, provider: t.provider.rawValue)
-        notify()
+        notify(touching: t)
     }
 }

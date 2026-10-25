@@ -77,8 +77,12 @@ extension AppDelegate: NSApplicationDelegate {
         setupGlobalHotkey()
         buildMenu()
 
+        // The settings toggle flips `isEnabled` at any time; the round trip always lands here.
+        ICloudSyncService.shared.performSync = { [weak self] in self?.store.synchronizeWithICloud() }
+
         // Verification hook: exercise the backup path and exit before any window work.
         if runBackupSelfTestIfRequested() { return }
+        if runSyncSelfTestIfRequested() { return }
 
         if let dir = Self.storeShotDirectory {
             // Store screenshot run: same windows, real pixels, no prompts, no lock screen.
@@ -94,10 +98,11 @@ extension AppDelegate: NSApplicationDelegate {
             NotificationService.requestPermission()
             NotificationService.scheduleExpiryReminders(for: store.allTokens)
 
-            // iCloud backup: refresh the reported state, then snapshot whatever is already stored.
-            if settings.iCloudBackupEnabled {
+            // iCloud: refresh the reported state, then run one real round trip (pull + push).
+            if settings.iCloudSyncEnabled {
                 ICloudBackupService.shared.refreshStatus(enabled: true)
-                ICloudBackupService.shared.backup(tokens: store.allTokens)
+                ICloudSyncService.shared.isEnabled = true
+                ICloudSyncService.shared.activate()
             }
         }
 
@@ -115,7 +120,8 @@ extension AppDelegate: NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         // Last chance to capture edits made in the final seconds before quit.
-        guard settings.iCloudBackupEnabled else { return }
+        guard settings.iCloudSyncEnabled else { return }
+        store.synchronizeWithICloud()
         ICloudBackupService.shared.backup(tokens: store.allTokens, force: true)
     }
 
@@ -294,6 +300,8 @@ extension AppDelegate: NSApplicationDelegate {
     @objc private func appDidBecomeActive() {
         idleTimer?.invalidate()
         idleTimer = nil
+        // Another device may have written while this app was in the background.
+        ICloudSyncService.shared.requestSyncNow()
     }
 
     private func performLock() {
@@ -499,7 +507,7 @@ extension AppDelegate {
     /// Used to verify the feature on machines where no iCloud container is provisioned yet.
     func runBackupSelfTestIfRequested() -> Bool {
         guard CommandLine.arguments.contains("--backup-selftest") else { return false }
-        settings.iCloudBackupEnabled = true
+        settings.iCloudSyncEnabled = true
         seedStoreShotData()
         ICloudBackupService.shared.refreshStatus(enabled: true)
 
@@ -516,6 +524,104 @@ extension AppDelegate {
             print("SELFTEST firstToken=\(first.name) valueReadable=\(!first.decryptedValue().isEmpty)")
         }
         exit(snapshots.isEmpty || !sameIDs ? 1 : 0)
+    }
+}
+
+// MARK: - iCloud sync self-test (`--sync-selftest`)
+
+extension AppDelegate {
+    /// Plays both devices in one process: two different vault master keys, one shared folder, and
+    /// the real service code in between — encrypt, seal, write, read, merge, re-encrypt, tombstone.
+    /// Nothing here touches iCloud, so it runs on a Mac without a container.
+    func runSyncSelfTestIfRequested() -> Bool {
+        guard CommandLine.arguments.contains("--sync-selftest") else { return false }
+
+        let shared = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("tv-sync-selftest-\(UUID().uuidString)/TokenVault", isDirectory: true)
+        try? FileManager.default.createDirectory(at: shared, withIntermediateDirectories: true)
+
+        let sync = ICloudSyncService.shared
+        sync.useLocalDirectoryForTesting(shared)
+        ICloudSyncService.keyOverride = Data(repeating: 0x5C, count: 32)
+
+        let keyA = Data(repeating: 0xA1, count: 32)
+        let keyB = Data(repeating: 0xB2, count: 32)
+        // One process, two devices: each has its own master key and its own change ledger, exactly
+        // like two installs with their own UserDefaults.
+        UserDefaults.standard.removeObject(forKey: "tv.sync.selftest.A")
+        UserDefaults.standard.removeObject(forKey: "tv.sync.selftest.B")
+        func becomeDevice(_ name: String, key: Data) {
+            EncryptionService.keyOverride = key
+            sync.useLedgerKeyForTesting("tv.sync.selftest.\(name)")
+        }
+
+        var failures = 0
+        func check(_ ok: Bool, _ label: String) {
+            if !ok { failures += 1 }
+            print("SELFTEST \(ok ? "ok  " : "FAIL") \(label)")
+        }
+
+        // ── Device A writes three tokens and one folder ──
+        becomeDevice("A", key: keyA)
+        let group = SyncGroup(id: UUID(), name: "工作", icon: "briefcase.fill", sortOrder: 0)
+        var a = [
+            TokenItem(name: "OpenAI", plainValue: "sk-a-openai", groupID: group.id),
+            TokenItem(name: "GitHub", plainValue: "ghp-a-github"),
+            TokenItem(name: "Cloudflare", plainValue: "cf-a-cloudflare")
+        ]
+        let a1 = sync.synchronize(tokens: a, groups: [group])
+        a = a1?.tokens ?? a
+        check(a1?.written == true, "A writes the first snapshot")
+        check(a.count == 3, "A keeps its three tokens")
+
+        let file = shared.appendingPathComponent("vault.tvsync")
+        check(FileManager.default.fileExists(atPath: file.path), "vault.tvsync is created in the shared folder")
+        let raw = (try? Data(contentsOf: file)) ?? Data()
+        print("SELFTEST payload=\(raw.count) bytes at \(file.path)")
+        check(!raw.isEmpty && !String(decoding: raw, as: UTF8.self).contains("sk-a-openai"),
+              "the payload is sealed, not plaintext")
+
+        // ── Device B: different master key, one token of its own ──
+        becomeDevice("B", key: keyB)
+        var b = [TokenItem(name: "Stripe", plainValue: "sk_test-b-stripe")]
+        let b1 = sync.synchronize(tokens: b, groups: [])
+        b = b1?.tokens ?? b
+        check(b.count == 4, "B pulls A's three tokens and keeps its own")
+        check(b.first { $0.name == "OpenAI" }?.decryptedValue() == "sk-a-openai", "B decrypts A's secret")
+        check(b1?.written == true, "B pushes its own token")
+        check(b1?.groups.count == 1, "B receives A's folder")
+
+        // ── A pulls B's token, and a quiet round trip writes nothing ──
+        becomeDevice("A", key: keyA)
+        let a2 = sync.synchronize(tokens: a, groups: [group])
+        a = a2?.tokens ?? a
+        check(a.count == 4, "A pulls B's token")
+        check(a.first { $0.name == "Stripe" }?.decryptedValue() == "sk_test-b-stripe", "A decrypts B's secret")
+        check(a2?.written == false, "an unchanged vault does not rewrite the file")
+
+        // ── An edit on A reaches B ──
+        if let gh = a.first(where: { $0.name == "GitHub" }) { gh.note = "edited on A"; gh.touch() }
+        let a3 = sync.synchronize(tokens: a, groups: [group])
+        a = a3?.tokens ?? a
+        check(a3?.written == true, "an edit on A is pushed")
+        becomeDevice("B", key: keyB)
+        let b2 = sync.synchronize(tokens: b, groups: [])
+        b = b2?.tokens ?? b
+        check(b.first { $0.name == "GitHub" }?.note == "edited on A", "the edit arrives on B")
+
+        // ── A permanent delete on B removes the row on A, and it stays gone ──
+        b.removeAll { $0.name == "Cloudflare" }
+        _ = sync.synchronize(tokens: b, groups: [])
+        becomeDevice("A", key: keyA)
+        let a4 = sync.synchronize(tokens: a, groups: [group])
+        a = a4?.tokens ?? a
+        check(a.count == 3 && !a.contains { $0.name == "Cloudflare" },
+              "the delete propagates instead of resurrecting")
+        let a5 = sync.synchronize(tokens: a, groups: [group])
+        check(a5?.tokens.count == 3, "the row stays gone on the next round trip")
+
+        print("SELFTEST failures=\(failures) tokensA=\(a.count) tokensB=\(b.count)")
+        exit(failures == 0 ? 0 : 1)
     }
 }
 #endif

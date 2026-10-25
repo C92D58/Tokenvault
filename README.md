@@ -61,9 +61,12 @@ TokenVault is **free and open-source software**, released under the [MIT License
 
 ### 🔄 Backup & transfer
 
-- **Automatic encrypted backup to iCloud** — snapshots land in
-  `iCloud Drive/TokenVault/Backups`, newest 7 kept; the key sits in your iCloud keychain so a
-  replacement device restores with nothing to retype
+- **Live iCloud sync** — the vault is sealed with a key from your iCloud keychain and stored at
+  `iCloud Drive/TokenVault/vault.tvsync`; every Mac and iPhone on the same Apple ID merges it
+  automatically, row by row, newest edit wins. Deletes propagate too.
+- **Automatic encrypted snapshots** — the newest 7 backups stay in `iCloud Drive/TokenVault/Backups`
+  for one-click restore; the key sits in your iCloud keychain so a replacement device restores with
+  nothing to retype
 - **Encrypted backups** — export an AES-256-GCM JSON backup, or `.env` / CSV for other tools
 - **Multi-format import** — `.env`, CSV, JSON backups, manual paste, drag & drop
 - **GitHub private-repo backup** (macOS) — encrypted backup to your own private repo (optional)
@@ -190,11 +193,13 @@ TokenVault's encryption architecture:
 
 1. Every token value is encrypted with **AES-256-GCM** before being written to disk
 2. The encryption key lives in the **macOS Keychain**, protected by Secure Enclave
-3. Keys **never** leave your device
-4. iCloud sync carries encrypted ciphertext only
+3. Device keys **never** leave your device
+4. iCloud only ever stores ciphertext: the sync file is sealed with a separate key kept in your
+   **iCloud Keychain**, and each device re-encrypts every value with its own key when it stores it
 5. Biometrics (Face ID / Touch ID) unlock the app itself
 
-> TokenVault **does not** use any remote server, analytics or third-party network service. Your data exists only on your device.
+> TokenVault **does not** use any remote server, analytics or third-party network service. The only
+> copy outside your devices is the encrypted file in your own iCloud Drive.
 
 Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY.md). Do not open a public issue.
 

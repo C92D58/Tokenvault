@@ -205,17 +205,19 @@ final class VaultStore: ObservableObject {
         try? data.write(to: fileURL, options: .atomic)
     }
 
-    private func commit(_ log: (() -> Void)? = nil) {
+    private func commit(touching token: TokenItem? = nil, _ log: (() -> Void)? = nil) {
+        token?.touch()
         log?()
         save()
         objectWillChange.send()
+        ICloudSyncService.shared.requestSync()
     }
 
     // MARK: - Mutations
 
     func add(_ token: TokenItem, note: String = "已加密儲存") {
         tokens.append(token)
-        commit {
+        commit(touching: token) {
             SecurityLogService.shared.log(.created, tokenID: token.id, name: token.name,
                                           provider: token.provider.rawValue)
         }
@@ -223,7 +225,7 @@ final class VaultStore: ObservableObject {
 
     /// Call after mutating a token in place (the editor writes straight to the model).
     func commitEdits(to token: TokenItem) {
-        commit {
+        commit(touching: token) {
             SecurityLogService.shared.log(.edited, tokenID: token.id, name: token.name,
                                           provider: token.provider.rawValue)
         }
@@ -231,13 +233,13 @@ final class VaultStore: ObservableObject {
 
     func toggleFavorite(_ token: TokenItem) {
         token.isFavorite.toggle()
-        commit()
+        commit(touching: token)
     }
 
     func recordUse(_ token: TokenItem) {
         token.lastUsedAt = Date()
         token.copyCount += 1
-        commit {
+        commit(touching: token) {
             SecurityLogService.shared.log(.copied, tokenID: token.id, name: token.name,
                                           provider: token.provider.rawValue)
         }
@@ -245,7 +247,7 @@ final class VaultStore: ObservableObject {
 
     func trash(_ token: TokenItem) {
         token.deletedAt = Date()
-        commit {
+        commit(touching: token) {
             SecurityLogService.shared.log(.deleted, tokenID: token.id, name: token.name,
                                           provider: token.provider.rawValue)
         }
@@ -253,7 +255,7 @@ final class VaultStore: ObservableObject {
 
     func restore(_ token: TokenItem) {
         token.deletedAt = nil
-        commit {
+        commit(touching: token) {
             SecurityLogService.shared.log(.restored, tokenID: token.id, name: token.name,
                                           provider: token.provider.rawValue)
         }
@@ -261,7 +263,7 @@ final class VaultStore: ObservableObject {
 
     func deleteForever(_ token: TokenItem) {
         tokens.removeAll { $0.id == token.id }
-        commit()
+        commit(touching: token)
     }
 
     func emptyTrash() {
@@ -289,6 +291,29 @@ final class VaultStore: ObservableObject {
         tokens.forEach { if $0.groupID == group.id { $0.groupID = nil } }
         groups.removeAll { $0.id == group.id }
         save()
+    }
+
+    // MARK: - iCloud sync
+
+    var syncGroups: [SyncGroup] {
+        groups.map { SyncGroup(id: $0.id, name: $0.name, icon: $0.icon, sortOrder: $0.sortOrder) }
+    }
+
+    /// One full round trip against iCloud Drive: pull what other devices wrote, merge it in, push
+    /// whatever this iPhone knows that iCloud does not. Called on the main thread by AppState.
+    func synchronizeWithICloud() {
+        guard let outcome = ICloudSyncService.shared.synchronize(tokens: tokens, groups: syncGroups)
+        else { return }
+        if outcome.tokens.map(\.id) != tokens.map(\.id) {
+            tokens = outcome.tokens
+        }
+        groups = outcome.groups.map {
+            VaultGroup(id: $0.id, name: $0.name, icon: $0.icon, sortOrder: $0.sortOrder)
+        }
+        if outcome.applied > 0 || outcome.written {
+            save()
+            objectWillChange.send()
+        }
     }
 
     // MARK: - Import / export
@@ -371,6 +396,7 @@ final class VaultStore: ObservableObject {
                                           name: filename, provider: "檔案")
             save()
             objectWillChange.send()
+            ICloudSyncService.shared.requestSync()
         }
         return report
     }

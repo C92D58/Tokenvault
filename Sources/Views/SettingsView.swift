@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var settings = SettingsService.shared
     @ObservedObject private var backupService = ICloudBackupService.shared
+    @ObservedObject private var syncService = ICloudSyncService.shared
     @State private var showGHSetup = false
     @State private var ghToken = ""
     @State private var syncing = false
@@ -84,35 +85,39 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Toggle("iCloud 自動備份", isOn: $settings.iCloudBackupEnabled)
-                        .onChange(of: settings.iCloudBackupEnabled) { _, on in
+                    Toggle("iCloud 同步", isOn: $settings.iCloudSyncEnabled)
+                        .onChange(of: settings.iCloudSyncEnabled) { _, on in
+                            syncService.isEnabled = on
                             backupService.refreshStatus(enabled: on)
-                            if on, let store = liveStore {
-                                backupService.backup(tokens: store.allTokens, force: true)
+                            if on {
+                                syncService.activate()
+                            } else {
+                                syncService.deactivate()
                             }
                         }
-                        .onAppear { backupService.refreshStatus(enabled: settings.iCloudBackupEnabled) }
+                        .onAppear {
+                            syncService.isEnabled = settings.iCloudSyncEnabled
+                            backupService.refreshStatus(enabled: settings.iCloudSyncEnabled)
+                        }
 
-                    Text(backupService.status.summary)
+                    Text(syncService.statusText)
                         .font(.system(size: 10))
-                        .foregroundColor(backupFailed ? .red : .secondary)
+                        .foregroundColor(syncFailed ? .red : .secondary)
 
                     HStack(spacing: 8) {
-                        Button("立即備份") {
-                            guard let store = liveStore else { return }
-                            ICloudBackupService.shared.refreshStatus(enabled: true)
-                            ICloudBackupService.shared.backup(tokens: store.allTokens, force: true)
+                        Button(syncService.state == .syncing ? "同步中…" : "立即同步") {
+                            syncService.requestSyncNow()
                         }
                         .buttonStyle(.bordered).controlSize(.small)
-                        .disabled(!settings.iCloudBackupEnabled)
+                        .disabled(!settings.iCloudSyncEnabled)
 
-                        Button("從 iCloud 還原…") { showingRestore = true }
+                        Button("從備份還原…") { showingRestore = true }
                             .buttonStyle(.bordered).controlSize(.small)
-                            .disabled(!settings.iCloudBackupEnabled || !backupService.isAvailable)
+                            .disabled(!settings.iCloudSyncEnabled || !backupService.isAvailable)
                     }
                     .sheet(isPresented: $showingRestore) { restoreSheet }
 
-                    Text("加密後寫入 iCloud Drive/TokenVault/Backups，保留最近 7 份。金鑰存在 iCloud 鑰匙圈，換機登入同一 Apple ID 即可還原。")
+                    Text("整份加密後寫入 iCloud Drive/TokenVault/vault.tvsync：同一 Apple ID 的 Mac 與 iPhone 自動雙向合併，逐筆以修改時間為準。金鑰存在 iCloud 鑰匙圈，加密備份另保留最近 7 份。")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                 } header: {
                     Text("iCloud".uppercased()).font(.system(size: 11, weight: .semibold))
@@ -367,6 +372,12 @@ extension SettingsView {
 
     var backupFailed: Bool {
         if case .failed = backupService.status { return true }
+        return false
+    }
+
+    var syncFailed: Bool {
+        if case .failed = syncService.state { return true }
+        if case .unavailable = syncService.state { return true }
         return false
     }
 

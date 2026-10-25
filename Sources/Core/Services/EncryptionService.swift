@@ -6,10 +6,16 @@ import Foundation
 enum EncryptionService {
     private static let keyTag = "org.wahsun.tokenvault.masterkey".data(using: .utf8)!
 
+    /// Test hook only: forces a specific 32-byte master key.
+    static var keyOverride: Data?
+
     // MARK: - Master Key
 
     /// Get or create the 256-bit master key from Keychain.
     static func masterKey() throws -> SymmetricKey {
+        // Test hook: the two-device sync self-test plays both sides in one process, which is only
+        // meaningful when each side has its own key.
+        if let data = keyOverride, data.count == 32 { return SymmetricKey(data: data) }
         if let existing = try? KeychainService.read(tag: keyTag) {
             return SymmetricKey(data: existing)
         }

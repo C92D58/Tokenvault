@@ -40,8 +40,8 @@ final class TokenGroup: ObservableObject, Identifiable, Codable, Hashable {
 
     enum CodingKeys: String, CodingKey { case id, name, icon, sortOrder, tokens }
 
-    init(name: String, icon: String = "folder", sortOrder: Int = 0, tokens: [TokenItem] = []) {
-        self.id = UUID(); self.name = name; self.icon = icon; self.sortOrder = sortOrder; self.tokens = tokens
+    init(id: UUID = UUID(), name: String, icon: String = "folder", sortOrder: Int = 0, tokens: [TokenItem] = []) {
+        self.id = id; self.name = name; self.icon = icon; self.sortOrder = sortOrder; self.tokens = tokens
     }
     required init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -81,12 +81,16 @@ final class TokenItem: ObservableObject, Identifiable, Codable, Equatable {
     @Published var rotatedAt: Date?
     @Published var rotationDueAt: Date?
     @Published var customFields: [String: String]
+    /// Last time this row changed **in a way worth syncing**. iCloud sync merges per token on this
+    /// value, so every mutation funnel has to stamp it (`touch()`); decoding writes the sender's
+    /// stamp verbatim, which is what makes the merge order the same on every device.
+    @Published var updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id, name, encryptedValue, note, environment
         case provider, category, kind, tags, expiresAt, createdAt
         case lastUsedAt, deletedAt, copyCount, isFavorite, groupID
-        case rotatedAt, rotationDueAt, customFields
+        case rotatedAt, rotationDueAt, customFields, updatedAt
         // 舊版欄位，僅供讀取遷移
         case tokenType, secretType
     }
@@ -95,16 +99,18 @@ final class TokenItem: ObservableObject, Identifiable, Codable, Equatable {
          environment: TokenEnvironment = .production, provider: TokenProvider? = nil,
          category: TokenCategory? = nil, kind: TokenKind = .apiKey, tags: [String] = [],
          expiresAt: Date? = nil, groupID: UUID? = nil,
-         customFields: [String: String] = [:]) {
+         customFields: [String: String] = [:], id: UUID = UUID()) {
         let detectedProvider = provider ?? TokenProvider.detect(from: name, value: plainValue)
-        self.id = UUID(); self.name = name; self.note = note
-        self.environment = environment; self.expiresAt = expiresAt; self.createdAt = Date()
+        let now = Date()
+        self.id = id; self.name = name; self.note = note
+        self.environment = environment; self.expiresAt = expiresAt; self.createdAt = now
         self.lastUsedAt = nil; self.deletedAt = nil
         self.copyCount = 0; self.isFavorite = false; self.groupID = groupID
         self.kind = kind
         self.tags = tags
         self.customFields = customFields
         self.rotatedAt = nil; self.rotationDueAt = nil
+        self.updatedAt = now
         self.provider = detectedProvider
         self.category = category ?? detectedProvider.category
         self.encryptedValue = (try? EncryptionService.encrypt(plainValue)) ?? plainValue
@@ -125,7 +131,8 @@ final class TokenItem: ObservableObject, Identifiable, Codable, Equatable {
             ?? .apiKey
         tags = (try? c.decode([String].self, forKey: .tags)) ?? []
         expiresAt = try c.decodeIfPresent(Date.self, forKey: .expiresAt)
-        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        let created = try c.decode(Date.self, forKey: .createdAt)
+        createdAt = created
         lastUsedAt = try c.decodeIfPresent(Date.self, forKey: .lastUsedAt)
         deletedAt = try c.decodeIfPresent(Date.self, forKey: .deletedAt)
         copyCount = try c.decode(Int.self, forKey: .copyCount)
@@ -134,6 +141,9 @@ final class TokenItem: ObservableObject, Identifiable, Codable, Equatable {
         rotatedAt = try c.decodeIfPresent(Date.self, forKey: .rotatedAt)
         rotationDueAt = try c.decodeIfPresent(Date.self, forKey: .rotationDueAt)
         customFields = (try? c.decode([String: String].self, forKey: .customFields)) ?? [:]
+        // Vault files written before sync existed have no stamp; createdAt is the honest fallback
+        // and keeps the row from looking "newer" than everything else on the first merge.
+        updatedAt = (try? c.decode(Date.self, forKey: .updatedAt)) ?? created
     }
 
     func encode(to encoder: Encoder) throws {
@@ -149,7 +159,11 @@ final class TokenItem: ObservableObject, Identifiable, Codable, Equatable {
         try c.encodeIfPresent(groupID, forKey: .groupID)
         try c.encodeIfPresent(rotatedAt, forKey: .rotatedAt); try c.encodeIfPresent(rotationDueAt, forKey: .rotationDueAt)
         try c.encode(customFields, forKey: .customFields)
+        try c.encode(updatedAt, forKey: .updatedAt)
     }
+
+    /// Stamp a change so iCloud sync can order this row against the same row on other devices.
+    func touch() { updatedAt = Date() }
 
     static func == (lhs: TokenItem, rhs: TokenItem) -> Bool { lhs.id == rhs.id }
 

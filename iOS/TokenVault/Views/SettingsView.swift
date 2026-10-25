@@ -7,6 +7,7 @@ struct SettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
     @EnvironmentObject private var toast: ToastCenter
     @ObservedObject private var icloudBackup = ICloudBackupService.shared
+    @ObservedObject private var icloudSync = ICloudSyncService.shared
 
     @State private var showingImport = false
     @State private var showingTrash = false
@@ -197,24 +198,48 @@ struct SettingsView: View {
             .accessibilityIdentifier("settings.trash")
 
             SettingsRow(symbol: "internaldrive", title: "儲存位置",
-                        detail: "App 的文件夾，以 AES-256-GCM 加密") {
+                        detail: "本機加密儲存；iCloud 另存加密同步檔") {
                 Text("本機")
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
 
-            SettingsRow(symbol: "icloud", title: "iCloud 自動備份",
-                        detail: icloudBackup.status.summary) {
-                Toggle("", isOn: $settings.iCloudBackup)
+            SettingsRow(symbol: "icloud", title: "iCloud 同步",
+                        detail: icloudSync.statusText) {
+                Toggle("", isOn: $settings.iCloudSync)
                     .labelsHidden()
                     .tint(Theme.accent)
-                    .onChange(of: settings.iCloudBackup) { _, isOn in
+                    .onChange(of: settings.iCloudSync) { _, isOn in
+                        ICloudSyncService.shared.isEnabled = isOn
                         icloudBackup.refreshStatus(enabled: isOn)
-                        if isOn { icloudBackup.backup(tokens: vault.activeTokens, force: true) }
+                        if isOn {
+                            ICloudSyncService.shared.activate()
+                        } else {
+                            ICloudSyncService.shared.deactivate()
+                        }
                     }
             }
             .accessibilityIdentifier("settings.icloud")
-            .onAppear { icloudBackup.refreshStatus(enabled: settings.iCloudBackup) }
+            .onAppear {
+                ICloudSyncService.shared.isEnabled = settings.iCloudSync
+                icloudBackup.refreshStatus(enabled: settings.iCloudSync)
+            }
+
+            if settings.iCloudSync {
+                Button {
+                    ICloudSyncService.shared.requestSyncNow()
+                    toast.show("同步中…", symbol: "arrow.triangle.2.circlepath", tint: Theme.accent)
+                } label: {
+                    SettingsRow(symbol: "arrow.triangle.2.circlepath", title: "立即同步",
+                                detail: "與 iCloud 上的其他裝置合併") {
+                        Text("同步")
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.accent)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.syncNow")
+            }
         }
         .cardSurface(padding: Theme.Space.m)
     }

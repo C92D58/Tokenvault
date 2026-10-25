@@ -34,7 +34,7 @@ final class SettingsStore: ObservableObject {
     @Published var autoLockSeconds: Int { didSet { defaults.set(autoLockSeconds, forKey: Keys.autoLock) } }
     @Published var clipboardClearSeconds: Int { didSet { defaults.set(clipboardClearSeconds, forKey: Keys.clipboard) } }
     @Published var expiryReminders: Bool { didSet { defaults.set(expiryReminders, forKey: Keys.reminders) } }
-    @Published var iCloudBackup: Bool { didSet { defaults.set(iCloudBackup, forKey: Keys.icloudBackup) } }
+    @Published var iCloudSync: Bool { didSet { defaults.set(iCloudSync, forKey: Keys.icloudSync) } }
     @Published var hasSeenWelcome: Bool { didSet { defaults.set(hasSeenWelcome, forKey: Keys.welcome) } }
 
     private let defaults: UserDefaults
@@ -45,7 +45,8 @@ final class SettingsStore: ObservableObject {
         static let autoLock = "tv.autoLockSeconds"
         static let clipboard = "tv.clipboardClearSeconds"
         static let reminders = "tv.expiryReminders"
-        static let icloudBackup = "tv.icloudBackup"
+        static let icloudSync = "tv.iCloudSync"
+        static let icloudBackupLegacy = "tv.iCloudBackup"
         static let welcome = "tv.hasSeenWelcome"
     }
 
@@ -56,7 +57,9 @@ final class SettingsStore: ObservableObject {
         autoLockSeconds = defaults.object(forKey: Keys.autoLock) as? Int ?? 60
         clipboardClearSeconds = defaults.object(forKey: Keys.clipboard) as? Int ?? 45
         expiryReminders = defaults.object(forKey: Keys.reminders) as? Bool ?? true
-        iCloudBackup = defaults.object(forKey: Keys.icloudBackup) as? Bool ?? true
+        iCloudSync = defaults.object(forKey: Keys.icloudSync) as? Bool
+            ?? defaults.object(forKey: Keys.icloudBackupLegacy) as? Bool
+            ?? true
         hasSeenWelcome = defaults.object(forKey: Keys.welcome) as? Bool ?? false
     }
 

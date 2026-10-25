@@ -59,10 +59,13 @@ final class AppState: ObservableObject {
         if settings.expiryReminders && !options.isUITest { NotificationService.requestPermission() }
         refreshReminders()
 
-        // iCloud backup: report availability, then snapshot the vault once.
-        if settings.iCloudBackup && !options.isUITest {
+        // iCloud: one round trip at launch, and a snapshot for the restore list.
+        ICloudSyncService.shared.performSync = { [weak self] in self?.vault.synchronizeWithICloud() }
+        if settings.iCloudSync && !options.isUITest {
             ICloudBackupService.shared.refreshStatus(enabled: true)
             ICloudBackupService.shared.backup(tokens: vault.activeTokens)
+            ICloudSyncService.shared.isEnabled = true
+            ICloudSyncService.shared.activate()
         }
     }
 
@@ -72,8 +75,10 @@ final class AppState: ObservableObject {
             isShielded = true
             if leftForegroundAt == nil { leftForegroundAt = Date() }
             toast.dismiss()
-            // The system may kill a backgrounded app at any time: snapshot before that happens.
-            if case .background = phase, settings.iCloudBackup {
+            // The system may kill a backgrounded app at any time: push before that happens, then
+            // keep an encrypted snapshot as the restore path of last resort.
+            if case .background = phase, settings.iCloudSync {
+                vault.synchronizeWithICloud()
                 ICloudBackupService.shared.backup(tokens: vault.activeTokens, force: true)
             }
         case .active:
@@ -83,6 +88,8 @@ final class AppState: ObservableObject {
                 let away = Date().timeIntervalSince(left)
                 if settings.shouldLock(afterAwayFor: away) { lock() }
             }
+            // Another device may have written while this app was in the background.
+            ICloudSyncService.shared.requestSyncNow()
             // A clipboard clear may have been due while the app was suspended.
             ClipboardService.shared.clearIfExpired()
         @unknown default:
