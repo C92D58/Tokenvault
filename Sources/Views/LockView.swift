@@ -36,14 +36,25 @@ struct LockView: View {
                         .frame(width: 100, height: 100)
                         .opacity(0.2)
 
-                    // The icon fills the ring: no dead gap between the mark and the circle.
+                    // The mark IS the circle: a full-bleed disc in the icon's colours with the
+                    // shield drawn at a size that reads at a glance. No card, no inner plate.
                     Circle()
-                        .fill(Color(red: 0.09, green: 0.063, blue: 0.165))  // the icon's own base
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(red: 0.165, green: 0.110, blue: 0.306),
+                                         Color(red: 0.090, green: 0.063, blue: 0.165)],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
+                            )
+                        )
                         .frame(width: 100, height: 100)
-                    markShape
-                        .frame(width: 100, height: 100)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 1))
+                        .overlay(
+                            Circle().stroke(Color.white.opacity(0.14), lineWidth: 1)
+                        )
+                        .overlay(
+                            Image(systemName: "lock.shield.fill")
+                                .font(.system(size: 50, weight: .medium))
+                                .foregroundStyle(DS.Color.accentGradient)
+                        )
                         .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
                 }
 
@@ -145,29 +156,5 @@ struct LockView: View {
         asking = true
         defer { asking = false }
         if await auth.authenticate() { onUnlock() }
-    }
-
-    /// The app's own icon, so the launch screen matches the Dock and Finder. `NSApp` has no icon in
-    /// a bare swiftc build (build.sh), so fall back to the drawn mark there.
-    @ViewBuilder
-    private var markShape: some View {
-        if let icon = NSApp.applicationIconImage {
-            // App-icon artwork carries a transparent margin (Apple's icon grid), so a plain clip
-            // leaves a ring of nothing inside the circle. Scale past the frame and let the crop cut
-            // into the artwork: the icon's own background reaches the edge.
-            Image(nsImage: icon)
-                .resizable()
-                .interpolation(.high)
-                .aspectRatio(1, contentMode: .fill)
-                .scaleEffect(1.55)
-        } else {
-            Rectangle()
-                .fill(DS.Color.accentGradient)
-                .overlay(
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 46, weight: .medium))
-                        .foregroundStyle(.white)
-                )
-        }
     }
 }
