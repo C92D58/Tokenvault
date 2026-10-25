@@ -10,6 +10,8 @@ struct SettingsView: View {
     @ObservedObject private var icloudSync = ICloudSyncService.shared
 
     @State private var showingImport = false
+    @State private var showingFolderPicker = false
+    @State private var usingCustomFolder = ICloudSyncService.shared.isUsingCustomFolder
     @State private var showingTrash = false
     @State private var showingExporter = false
     @State private var exportFormat: VaultStore.ExportFormat = .encryptedJSON
@@ -239,9 +241,51 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("settings.syncNow")
+
+                Button {
+                    showingFolderPicker = true
+                } label: {
+                    SettingsRow(symbol: "folder", title: "同步位置",
+                                detail: usingCustomFolder
+                                    ? (ICloudSyncService.shared.customFolderDisplayPath ?? "") + "/TokenVault"
+                                    : "App 容器 · 檔案 App 未必列出，可改用 iCloud Drive 資料夾") {
+                        Text(usingCustomFolder ? "更改" : "選擇")
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.accent)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.syncFolder")
+
+                if usingCustomFolder {
+                    Button {
+                        ICloudSyncService.shared.clearCustomFolder()
+                        usingCustomFolder = false
+                    } label: {
+                        SettingsRow(symbol: "arrow.uturn.backward", title: "改用 App 容器",
+                                    detail: "回到 App 自己的 iCloud 資料夾") {
+                            Text("還原")
+                                .font(Theme.caption)
+                                .foregroundStyle(Theme.accent)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .cardSurface(padding: Theme.Space.m)
+        .fileImporter(isPresented: $showingFolderPicker,
+                      allowedContentTypes: [.folder],
+                      allowsMultipleSelection: false) { result in
+            guard case .success(let urls) = result, let url = urls.first else { return }
+            do {
+                try ICloudSyncService.shared.setCustomFolder(url)
+                usingCustomFolder = true
+                toast.show("同步位置已切換", symbol: "folder.badge.checkmark", tint: Theme.accent)
+            } catch {
+                toast.show("無法使用這個資料夾", symbol: "exclamationmark.triangle", tint: Theme.warning)
+            }
+        }
     }
 
     private func prepareExport(_ format: VaultStore.ExportFormat) {

@@ -84,6 +84,8 @@ extension AppDelegate: NSApplicationDelegate {
         if runBackupSelfTestIfRequested() { return }
         if runSyncSelfTestIfRequested() { return }
         if runSyncWriteProbeIfRequested() { return }
+        if MainActor.assumeIsolated({ runRenderLockIfRequested() }) { return }
+        if MainActor.assumeIsolated({ runSyncFolderSelfTestIfRequested() }) { return }
 
         if let dir = Self.storeShotDirectory {
             // Store screenshot run: same windows, real pixels, no prompts, no lock screen.
@@ -661,4 +663,93 @@ extension AppDelegate {
         return true
     }
 }
+
+// MARK: - Offscreen render (`--render-lock <path>`)
+
+extension AppDelegate {
+    /// Renders the real `LockView` to a PNG so the launch screen can be reviewed without screen
+    /// recording permission (which an app should never need just to look at itself).
+    @MainActor
+    func runRenderLockIfRequested() -> Bool {
+        let args = CommandLine.arguments
+        guard let index = args.firstIndex(of: "--render-lock"), args.count > index + 1 else {
+            return false
+        }
+        let path = args[index + 1]
+        // Match how the lock screen actually appears: it inherits the app's colour scheme, and
+        // ImageRenderer has no window to inherit from.
+        let dark = !args.contains("--light")
+        let view = LockView(auth: AuthService(), onUnlock: {})
+            .frame(width: 420, height: 520)
+            .environment(\.colorScheme, dark ? .dark : .light)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        guard let image = renderer.nsImage,
+              let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff),
+              let png = rep.representation(using: .png, properties: [:]) else {
+            print("SELFTEST render failed")
+            exit(1)
+        }
+        // The sandbox cannot write /tmp; fall back to the container's own temp directory and report
+        // where the file actually landed.
+        var target = URL(fileURLWithPath: path)
+        do {
+            try png.write(to: target)
+        } catch {
+            // Prefer the iCloud container: it is the one place the sandbox writes that a human (and
+            // a shell) can read back without special permissions.
+            target = FileManager.default
+                .url(forUbiquityContainerIdentifier: ICloudSyncService.containerIdentifier)?
+                .appendingPathComponent("Documents/tv-lock.png")
+                ?? URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("tv-lock.png")
+            do { try png.write(to: target) } catch {
+                print("SELFTEST render write failed: \(error)")
+                exit(1)
+            }
+        }
+        print("SELFTEST rendered \(target.path) \(Int(image.size.width))x\(Int(image.size.height))")
+        exit(0)
+    }
+}
+
+
+// MARK: - Custom folder self-test (`--sync-folder-selftest`)
+
+extension AppDelegate {
+    /// Points the sync at a folder, writes, and reports where the payload actually landed. Covers
+    /// the bookmark round trip, the directory switch and the write — everything the ✕「選擇資料夾」
+    /// button does except the human choosing the folder.
+    func runSyncFolderSelfTestIfRequested() -> Bool {
+        guard CommandLine.arguments.contains("--sync-folder-selftest") else { return false }
+        settings.iCloudSyncEnabled = true
+        ICloudSyncService.shared.isEnabled = true
+        ICloudSyncService.shared.performSync = { [weak self] in self?.store.synchronizeWithICloud() }
+
+        let dir = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("tv-folder-test", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        do {
+            try ICloudSyncService.shared.setCustomFolder(dir)
+        } catch {
+            print("SELFTEST folder bookmark failed: \(error)")
+            exit(1)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            ICloudSyncService.shared.requestSyncNow()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                let file = dir.appendingPathComponent("TokenVault/vault.tvsync")
+                let exists = FileManager.default.fileExists(atPath: file.path)
+                let bytes = (try? FileManager.default.attributesOfItem(atPath: file.path)[.size] as? Int) ?? 0
+                let resolved = ICloudSyncService.shared.directory?.path ?? "-"
+                print("SELFTEST customFolder=\(ICloudSyncService.shared.isUsingCustomFolder) wrote=\(exists) bytes=\(bytes ?? 0)")
+                print("SELFTEST resolved=\(resolved)")
+                ICloudSyncService.shared.clearCustomFolder()
+                exit(exists ? 0 : 1)
+            }
+        }
+        return true
+    }
+}
+
 #endif

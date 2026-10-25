@@ -7,6 +7,8 @@ struct LockView: View {
     @State private var pulse = false
     @State private var appear = false
     @State private var isActive = true
+    @State private var asking = false
+    @State private var didAutoPrompt = false
     @State private var glowRotation: Double = 0
 
     var body: some View {
@@ -19,7 +21,7 @@ struct LockView: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                // Shield icon — thick glass
+                // App mark — the real icon, edge to edge with the ring
                 ZStack {
                     // Outer glow pulse
                     Circle()
@@ -34,21 +36,15 @@ struct LockView: View {
                         .frame(width: 100, height: 100)
                         .opacity(0.2)
 
-                    // Shield card — glass material
-                    RoundedRectangle(cornerRadius: 22)
-                        .fill(Color(.controlBackgroundColor))
-                        .frame(width: 80, height: 80)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 22)
-                                .stroke(Color.primary.opacity(0.12), lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.10), radius: 16, y: 6)
-
-                    // Lock icon
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 32, weight: .medium))
-                        .foregroundStyle(DS.Color.accentGradient)
+                    // The icon fills the ring: no dead gap between the mark and the circle.
+                    Circle()
+                        .fill(Color(red: 0.09, green: 0.063, blue: 0.165))  // the icon's own base
+                        .frame(width: 100, height: 100)
+                    markShape
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 1))
+                        .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
                 }
 
                 Spacer().frame(height: 32)
@@ -84,10 +80,7 @@ struct LockView: View {
 
                 // Unlock button — glass pill
                 Button {
-                    Task {
-                        let ok = await auth.authenticate()
-                        if ok { onUnlock() }
-                    }
+                    Task { await unlockNow() }
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: auth.biometryType == "Face ID" ? "faceid" : "touchid")
@@ -132,6 +125,49 @@ struct LockView: View {
         .onDisappear {
             isActive = false
             pulse = false
+        }
+        .task { await autoUnlockIfNeeded() }
+    }
+
+    /// Ask for Touch ID as soon as the window is up: a lock screen that waits for a click is a lock
+    /// screen that gets clicked. Runs once per appearance so a cancelled prompt does not loop.
+    private func autoUnlockIfNeeded() async {
+        guard !didAutoPrompt else { return }
+        didAutoPrompt = true
+        // Let the window finish drawing first; a prompt over a blank window feels like a glitch.
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        guard isActive else { return }
+        await unlockNow()
+    }
+
+    private func unlockNow() async {
+        guard !asking else { return }
+        asking = true
+        defer { asking = false }
+        if await auth.authenticate() { onUnlock() }
+    }
+
+    /// The app's own icon, so the launch screen matches the Dock and Finder. `NSApp` has no icon in
+    /// a bare swiftc build (build.sh), so fall back to the drawn mark there.
+    @ViewBuilder
+    private var markShape: some View {
+        if let icon = NSApp.applicationIconImage {
+            // App-icon artwork carries a transparent margin (Apple's icon grid), so a plain clip
+            // leaves a ring of nothing inside the circle. Scale past the frame and let the crop cut
+            // into the artwork: the icon's own background reaches the edge.
+            Image(nsImage: icon)
+                .resizable()
+                .interpolation(.high)
+                .aspectRatio(1, contentMode: .fill)
+                .scaleEffect(1.2)
+        } else {
+            Rectangle()
+                .fill(DS.Color.accentGradient)
+                .overlay(
+                    Image(systemName: "lock.shield.fill")
+                        .font(.system(size: 46, weight: .medium))
+                        .foregroundStyle(.white)
+                )
         }
     }
 }

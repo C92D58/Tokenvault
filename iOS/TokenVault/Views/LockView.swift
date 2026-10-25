@@ -6,6 +6,7 @@ struct LockView: View {
     @EnvironmentObject private var settings: SettingsStore
     @State private var pulse = false
     @State private var asking = false
+    @State private var didAutoPrompt = false
 
     var body: some View {
         ZStack {
@@ -31,12 +32,7 @@ struct LockView: View {
 
                 VStack(spacing: Theme.Space.s) {
                     Button {
-                        guard !asking else { return }
-                        asking = true
-                        Task {
-                            await app.unlock()
-                            asking = false
-                        }
+                        Task { await unlockNow() }
                     } label: {
                         HStack(spacing: 8) {
                             Image(systemName: app.auth.symbol)
@@ -78,10 +74,36 @@ struct LockView: View {
                 pulse = true
             }
         }
+        .task { await autoUnlockIfNeeded() }
+        // Anywhere on the screen is the unlock button: nobody should have to aim at a pill.
+        .contentShape(Rectangle())
+        .onTapGesture { Task { await unlockNow() } }
     }
 }
 
 /// Concentric vault door — drawn, not an image, so it scales to any screen and the pulse is real.
+private extension LockView {
+    /// Face ID the moment the screen is up — a lock screen that waits for a tap is a lock screen
+    /// that gets tapped. Once per appearance, so a cancelled prompt does not loop.
+    func autoUnlockIfNeeded() async {
+        guard !didAutoPrompt else { return }
+        didAutoPrompt = true
+        guard app.isLocked, settings.biometricLock else { return }
+        // `AppState.prepare()` already asks once at launch; this is the second, later attempt so a
+        // cancelled prompt does not leave a dead screen behind.
+        try? await Task.sleep(nanoseconds: 1_200_000_000)
+        guard app.isLocked else { return }
+        await unlockNow()
+    }
+
+    func unlockNow() async {
+        guard !asking, app.isLocked else { return }
+        asking = true
+        defer { asking = false }
+        await app.unlock()
+    }
+}
+
 struct VaultMark: View {
     var pulse: Bool
 

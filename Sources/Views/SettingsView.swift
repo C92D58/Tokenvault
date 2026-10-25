@@ -115,6 +115,19 @@ struct SettingsView: View {
                             .buttonStyle(.bordered).controlSize(.small)
                             .disabled(!settings.iCloudSyncEnabled || !backupService.isAvailable)
 
+                        Button(syncService.isUsingCustomFolder ? "更改資料夾…" : "選擇資料夾…") {
+                            chooseSyncFolder()
+                        }
+                        .buttonStyle(.bordered).controlSize(.small)
+                        .disabled(!settings.iCloudSyncEnabled || !syncService.isAvailable)
+
+                        if syncService.isUsingCustomFolder {
+                            Button("改用 App 容器") {
+                                syncService.clearCustomFolder()
+                            }
+                            .buttonStyle(.bordered).controlSize(.small)
+                        }
+
                         Button("在 Finder 中顯示") {
                             // Apple hides app containers from Finder's iCloud 雲盤 unless the app is
                             // document-based, so give the folder a way to be seen and inspected.
@@ -130,6 +143,10 @@ struct SettingsView: View {
 
                     Text("整份加密後寫入 iCloud Drive/TokenVault/vault.tvsync：同一 Apple ID 的 Mac 與 iPhone 自動雙向合併，逐筆以修改時間為準。金鑰存在 iCloud 鑰匙圈，加密備份另保留最近 7 份。這是 App 專屬容器，用「在 Finder 中顯示」可直接打開。")
                         .font(.system(size: 10)).foregroundColor(.secondary)
+
+                    Text(locationLine)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
                 } header: {
                     Text("iCloud".uppercased()).font(.system(size: 11, weight: .semibold))
                 }
@@ -270,6 +287,37 @@ struct SettingsView: View {
                 }
             }
             .padding(.vertical, 8)
+        }
+    }
+
+    // MARK: - Sync location
+
+    private var locationLine: String {
+        if syncService.isUsingCustomFolder {
+            let path = syncService.customFolderDisplayPath ?? ""
+            return L("位置：%@/TokenVault（iCloud 雲盤，Finder 與檔案 App 都看得到）", path)
+        }
+        return L("位置：App 容器（Finder 的 iCloud 雲盤不一定會列出，用上面的按鈕打開）")
+    }
+
+    /// iCloud Drive proper needs a user grant: a sandboxed app cannot write there on its own.
+    private func chooseSyncFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
+        panel.prompt = L("使用這個資料夾")
+        panel.message = L("選擇 iCloud 雲盤裡的資料夾；TokenVault 會在裡面建立 TokenVault/vault.tvsync")
+        panel.directoryURL = FileManager.default
+            .url(forUbiquityContainerIdentifier: ICloudSyncService.containerIdentifier)?
+            .deletingLastPathComponent()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try syncService.setCustomFolder(url)
+        } catch {
+            NSSound.beep()
+            print("[sync] could not store the bookmark: \(error.localizedDescription)")
         }
     }
 

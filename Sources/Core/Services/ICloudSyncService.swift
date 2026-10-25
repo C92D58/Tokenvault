@@ -191,6 +191,12 @@ final class ICloudSyncService: ObservableObject {
 
     private var resolvedDirectory: URL?
     private var didResolve = false
+    /// A folder the user picked (iCloud Drive › TokenVault). When set, the payload lives there
+    /// instead of the app's ubiquity container — the same folder Finder and the Files app show.
+    private var scopedFolder: URL?
+    private var folderWatcher: DispatchSourceFileSystemObject?
+    private let customFolderKey = "tv.sync.folder"
+    private let customFolderPathKey = "tv.sync.folderPath"
     private var isTesting = false
     private var isSyncing = false
     private var pendingAfterCurrent = false
@@ -226,8 +232,9 @@ final class ICloudSyncService: ObservableObject {
         guard isEnabled else { state = .off; return }
         guard didResolve else {
             didResolve = true
+            let service = self
             DispatchQueue.global(qos: .userInitiated).async {
-                let dir = Self.resolveDirectory()
+                let dir = service.resolveDirectory()
                 DispatchQueue.main.async {
                     self.resolvedDirectory = dir
                     guard let dir else {
@@ -253,16 +260,87 @@ final class ICloudSyncService: ObservableObject {
     func deactivate() {
         isEnabled = false
         pending?.cancel()
+        stopWatching()
+        state = .off
+    }
+
+    private func stopWatching() {
         query?.stop()
         if let query { NotificationCenter.default.removeObserver(query) }
         for observer in observers { NotificationCenter.default.removeObserver(observer) }
         observers.removeAll()
         query = nil
+        folderWatcher?.cancel()
+        folderWatcher = nil
+    }
+
+    // MARK: - User-chosen folder
+
+    /// True when the payload sits in a folder the user picked instead of the app container.
+    var isUsingCustomFolder: Bool { UserDefaults.standard.data(forKey: customFolderKey) != nil }
+
+    var customFolderDisplayPath: String? { UserDefaults.standard.string(forKey: customFolderPathKey) }
+
+    /// Persist a security-scoped bookmark for `url` and switch to it. The caller must have been given
+    /// the URL by a picker (NSOpenPanel / UIDocumentPicker); that grant is the only way a sandboxed
+    /// app may write into iCloud Drive itself rather than its own container.
+    func setCustomFolder(_ url: URL) throws {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        #if os(macOS)
+        let data = try url.bookmarkData(options: [.withSecurityScope],
+                                        includingResourceValuesForKeys: nil, relativeTo: nil)
+        #else
+        let data = try url.bookmarkData(options: [],
+                                        includingResourceValuesForKeys: nil, relativeTo: nil)
+        #endif
+        UserDefaults.standard.set(data, forKey: customFolderKey)
+        UserDefaults.standard.set(url.path, forKey: customFolderPathKey)
+        print("[sync] folder set to \(url.path)")
+        reloadLocation()
+    }
+
+    func clearCustomFolder() {
+        UserDefaults.standard.removeObject(forKey: customFolderKey)
+        UserDefaults.standard.removeObject(forKey: customFolderPathKey)
+        print("[sync] folder cleared, back to the app container")
+        reloadLocation()
+    }
+
+    /// Drop the resolved directory and the watchers, then resolve again. Used after the location
+    /// changes; the payload is re-read from the new place and merged, exactly like a cold launch.
+    func reloadLocation() {
+        stopWatching()
+        if let scopedFolder { scopedFolder.stopAccessingSecurityScopedResource() }
+        scopedFolder = nil
+        resolvedDirectory = nil
+        didResolve = false
+        lastSeen = nil
         state = .off
+        activate()
+    }
+
+    private func resolveCustomFolder() -> URL? {
+        guard let data = UserDefaults.standard.data(forKey: customFolderKey) else { return nil }
+        var stale = false
+        #if os(macOS)
+        let options: URL.BookmarkResolutionOptions = [.withSecurityScope, .withoutUI]
+        #else
+        let options: URL.BookmarkResolutionOptions = [.withoutUI]
+        #endif
+        guard let url = try? URL(resolvingBookmarkData: data, options: options,
+                                 relativeTo: nil, bookmarkDataIsStale: &stale) else {
+            print("[sync] the chosen folder bookmark no longer resolves")
+            return nil
+        }
+        // Returns false for URLs that are not security-scoped (e.g. the app's own container).
+        _ = url.startAccessingSecurityScopedResource()
+        scopedFolder = url
+        return url
     }
 
     /// `Documents/TokenVault` inside the ubiquity container, or nil when iCloud is not usable.
-    private static func resolveDirectory() -> URL? {
+    private func resolveDirectory() -> URL? {
         // Test hook: a plain folder stands in for the container so the whole round trip can run
         // without iCloud (the self-test does exactly this).
         if let path = ProcessInfo.processInfo.environment["TV_SYNC_DIR"] {
@@ -270,10 +348,20 @@ final class ICloudSyncService: ObservableObject {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             return dir
         }
-        guard let root = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier) else {
+        // A user-picked folder wins: it is an ordinary iCloud Drive folder, visible everywhere.
+        if let folder = resolveCustomFolder() {
+            let dir = folder.appendingPathComponent(Self.folderName, isDirectory: true)
+            do {
+                try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                return dir
+            } catch {
+                print("[sync] cannot use the chosen folder: \(error.localizedDescription)")
+            }
+        }
+        guard let root = FileManager.default.url(forUbiquityContainerIdentifier: Self.containerIdentifier) else {
             return nil
         }
-        let dir = root.appendingPathComponent("Documents/\(folderName)", isDirectory: true)
+        let dir = root.appendingPathComponent("Documents/\(Self.folderName)", isDirectory: true)
         do {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             return dir
@@ -318,10 +406,27 @@ final class ICloudSyncService: ObservableObject {
     }
 
     private func startWatching() {
-        guard query == nil else { return }
-        // A plain folder (self-test) never delivers change notifications; only a real container does.
+        guard query == nil, folderWatcher == nil else { return }
+        // A plain folder (self-test) never delivers change notifications; only a real location does.
         guard !isTesting, ProcessInfo.processInfo.environment["TV_SYNC_DIR"] == nil else { return }
-        guard resolvedDirectory != nil else { return }
+        guard let dir = resolvedDirectory else { return }
+
+        if isUsingCustomFolder {
+            // A picked folder has no NSMetadataQuery; vnode events on the directory fire when iCloud
+            // (or the other device) replaces the payload.
+            let fd = Darwin.open(dir.path, O_EVTONLY)  // `open` is shadowed by the decode helper above
+            guard fd >= 0 else { return }
+            let source = DispatchSource.makeFileSystemObjectSource(
+                fileDescriptor: fd,
+                eventMask: [.write, .rename, .delete, .extend],
+                queue: .main
+            )
+            source.setEventHandler { [weak self] in self?.remoteChanged() }
+            source.setCancelHandler { close(fd) }
+            source.resume()
+            folderWatcher = source
+            return
+        }
 
         let q = NSMetadataQuery()
         q.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope]
