@@ -210,7 +210,13 @@ Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY
 All contributions are welcome — bug reports, feature suggestions, pull requests.
 
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR
-- Building locally is one command: `bash build.sh` (no Xcode project file, zero dependencies)
+- Building locally is one command: `bash build.sh` (no Xcode project file, zero dependencies).
+  That build is ad-hoc signed, so **iCloud sync reports itself unavailable** in it — macOS only
+  grants `com.apple.developer.icloud-*` entitlements to a properly signed app.
+- For a signed macOS build with working iCloud sync: `xcodegen generate && xcodebuild -project
+  TokenVault.xcodeproj -scheme TokenVault -configuration Debug -allowProvisioningUpdates
+  -allowProvisioningDeviceRegistration build`. `project.yml` and `build.sh` compile the same
+  `Sources/`; nothing is duplicated.
 
 ---
 

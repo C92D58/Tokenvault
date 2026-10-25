@@ -578,7 +578,11 @@ final class ICloudSyncService: ObservableObject {
     }
 
     private func open(_ data: Data) throws -> Snapshot {
-        let key = try syncKey()
+        // Never mint a key here: a file that already exists was written by another device with the
+        // key from the iCloud keychain. Creating a second key would make this device unable to read
+        // the vault and, worse, would let it write a payload nobody else can open. Wait for iCloud
+        // to deliver the key; the status says so and the next round trip retries.
+        guard let key = existingKey() else { throw SyncError.keyNotSynced }
         guard let box = try? AES.GCM.SealedBox(combined: data),
               let plain = try? AES.GCM.open(box, using: key) else {
             throw SyncError.unreadable
@@ -588,7 +592,9 @@ final class ICloudSyncService: ObservableObject {
 
     private func writeSnapshot(_ snapshot: Snapshot, to url: URL) throws {
         let plain = try encoder.encode(snapshot)
-        let key = try syncKey()
+        // Here a key may be created: this is the only write path, and a brand-new vault has no key
+        // yet. An existing file always has one (see `open`).
+        let key = try existingKey() ?? createKey()
         guard let sealed = try AES.GCM.seal(plain, using: key).combined else {
             throw SyncError.unreadable
         }
@@ -642,15 +648,19 @@ final class ICloudSyncService: ObservableObject {
     /// Test hook: an explicit key lets the two-device self-test run without the keychain.
     static var keyOverride: Data?
 
-    private func syncKey() throws -> SymmetricKey {
+    private func existingKey() -> SymmetricKey? {
         if let data = Self.keyOverride { return SymmetricKey(data: data) }
         if let hex = ProcessInfo.processInfo.environment["TV_SYNC_KEY"], let data = Self.hexKey(hex) {
             return SymmetricKey(data: data)
         }
-        if let existing = readKey() { return existing }
+        return readKey()
+    }
+
+    /// Only called when this device is writing a vault that does not exist yet.
+    private func createKey() throws -> SymmetricKey {
         let key = SymmetricKey(size: .bits256)
         let raw = key.withUnsafeBytes { Data($0) }
-        var query: [String: Any] = [
+        let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: Self.keyService,
             kSecAttrAccount as String: "vault-sync",
@@ -659,13 +669,11 @@ final class ICloudSyncService: ObservableObject {
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
             kSecAttrLabel as String: "TokenVault iCloud sync key",
         ]
-        #if os(iOS)
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-        #endif
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess || status == errSecDuplicateItem else {
             throw SyncError.keychain(status)
         }
+        print("[sync] created the shared sync key in the iCloud keychain")
         return readKey() ?? key
     }
 
@@ -730,12 +738,14 @@ final class ICloudSyncService: ObservableObject {
     enum SyncError: LocalizedError {
         case unreadable
         case truncated
+        case keyNotSynced
         case keychain(OSStatus)
 
         var errorDescription: String? {
             switch self {
             case .unreadable: return L("iCloud 上的資料無法用此裝置的金鑰解開")
             case .truncated: return L("iCloud 上的檔案尚未下載完成")
+            case .keyNotSynced: return L("iCloud 鑰匙圈還沒把同步金鑰送到這台裝置")
             case .keychain(let status): return L("iCloud 鑰匙圈無法寫入同步金鑰（%@）", "\(status)")
             }
         }
@@ -746,6 +756,8 @@ final class ICloudSyncService: ObservableObject {
             switch sync {
             case .keychain:
                 return L("需要開啟 iCloud 鑰匙圈：同步金鑰存在那裡，同一 Apple ID 的裝置才有辦法解密同一個檔案")
+            case .keyNotSynced:
+                return L("等待 iCloud 把同步金鑰送到這台裝置（請確認已開啟 iCloud 鑰匙圈），稍後會自動重試；在收到金鑰前不會覆寫雲端資料")
             case .unreadable:
                 return L("iCloud 上的資料無法用此裝置的金鑰解開，已停止同步以免覆蓋（請確認已開啟 iCloud 鑰匙圈，稍後會自動重試）")
             case .truncated:

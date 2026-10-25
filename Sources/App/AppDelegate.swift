@@ -80,9 +80,10 @@ extension AppDelegate: NSApplicationDelegate {
         // The settings toggle flips `isEnabled` at any time; the round trip always lands here.
         ICloudSyncService.shared.performSync = { [weak self] in self?.store.synchronizeWithICloud() }
 
-        // Verification hook: exercise the backup path and exit before any window work.
+        // Verification hooks: exercise the real paths and exit before any window work.
         if runBackupSelfTestIfRequested() { return }
         if runSyncSelfTestIfRequested() { return }
+        if runSyncWriteProbeIfRequested() { return }
 
         if let dir = Self.storeShotDirectory {
             // Store screenshot run: same windows, real pixels, no prompts, no lock screen.
@@ -622,6 +623,42 @@ extension AppDelegate {
 
         print("SELFTEST failures=\(failures) tokensA=\(a.count) tokensB=\(b.count)")
         exit(failures == 0 ? 0 : 1)
+    }
+}
+
+// MARK: - iCloud write probe (`--sync-write-probe`)
+
+extension AppDelegate {
+    /// Adds one throwaway token, syncs, deletes it, syncs again. Proves **this device** can write the
+    /// shared payload — not just read it — through the real container and key. Leaves nothing behind
+    /// but a tombstone. Run it while the other device is in the foreground to watch it apply both
+    /// steps in its own console.
+    func runSyncWriteProbeIfRequested() -> Bool {
+        guard CommandLine.arguments.contains("--sync-write-probe") else { return false }
+        settings.iCloudSyncEnabled = true
+        ICloudSyncService.shared.isEnabled = true
+        ICloudSyncService.shared.performSync = { [weak self] in self?.store.synchronizeWithICloud() }
+        ICloudSyncService.shared.activate()
+
+        let probe = TokenItem(name: "同步探針", plainValue: "probe-\(UUID().uuidString)",
+                              note: "由 --sync-write-probe 建立，隨即刪除")
+
+        // activate() resolves the container on a background thread; give it a beat before writing.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self else { exit(1) }
+            self.store.addToken(probe, to: nil)
+            // In-place edit: this is the path a text field binding takes — token.objectWillChange →
+            // DataStore.notify(touching:) → touch(). It used to overflow the stack there.
+            probe.note = "探針（就地修改）"
+            self.store.synchronizeWithICloud()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                self.store.deleteToken(probe)
+                self.store.synchronizeWithICloud()
+                print("SELFTEST probe removed; final status=\(ICloudSyncService.shared.statusText)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { exit(0) }
+            }
+        }
+        return true
     }
 }
 #endif

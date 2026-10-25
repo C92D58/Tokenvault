@@ -84,7 +84,11 @@ final class TokenItem: ObservableObject, Identifiable, Codable, Equatable {
     /// Last time this row changed **in a way worth syncing**. iCloud sync merges per token on this
     /// value, so every mutation funnel has to stamp it (`touch()`); decoding writes the sender's
     /// stamp verbatim, which is what makes the merge order the same on every device.
-    @Published var updatedAt: Date
+    ///
+    /// Deliberately **not** `@Published`: nothing renders it, and publishing it makes
+    /// `touch()` re-enter the objectWillChange subscription that called it (infinite recursion —
+    /// it crashed the app with a stack overflow).
+    var updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id, name, encryptedValue, note, environment

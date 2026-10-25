@@ -1,0 +1,529 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01E582DED8581483DF294CCA /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F699D965069CC7C7CCCC8FA5 /* DashboardView.swift */; };
+		0BA8CBAE0F151290360605D9 /* GlassViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F92CA752FEC13DC4A7AE6BB5 /* GlassViewModifier.swift */; };
+		0E5ABE7256FA2783D5757AC7 /* ImportWizard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8434F9F4C6F5595D1C006F5E /* ImportWizard.swift */; };
+		1226556A7BF8BB9880C83246 /* HealthCheckService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04EF3AE17820D8D0270CEF6 /* HealthCheckService.swift */; };
+		25EDF2316B9F532E80D4333F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B2E7647B6836F6C12BF1F7 /* SettingsView.swift */; };
+		27AA521698E77555F044E191 /* TokenVaultApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B93EC43BF51E645359F647D /* TokenVaultApp.swift */; };
+		2EE264BF88A7E8FF55EED8D9 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84460CFA1957C41B1B5FD0DC /* SettingsService.swift */; };
+		347D858772EC78585EDC4562 /* KeyboardHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D155E64D4661CBFF943573 /* KeyboardHUD.swift */; };
+		423EE0948939580CAFF03437 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D99676E8B748146EA77A013 /* BackupService.swift */; };
+		48ACAB2CADFB686998D28BC5 /* SpotlightSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CAF886AD57F127F9FDF3B6 /* SpotlightSearch.swift */; };
+		5EB5AF5A761EE20BF06617FC /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286B3A0F8306A67E56077391 /* AboutView.swift */; };
+		61254B0552BE69A6ABFC456B /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED90AA59D3B14E6B0FE7F129 /* EncryptionService.swift */; };
+		6535646CF7DDE70C5217350D /* ToastService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5AD6B48853C877CBFF7CFA /* ToastService.swift */; };
+		69D40337E6EB944CF8343404 /* ClipboardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EC2EC526E7937B8EF59F76 /* ClipboardService.swift */; };
+		6D8980252DD88098425E6207 /* ICloudSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03AD845F4686753D86DDFDA /* ICloudSyncService.swift */; };
+		76D31A17D6185353A91DB53E /* TokenEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F298C8615A073248170EE0 /* TokenEditor.swift */; };
+		84B58C701927EDAA0EB5F1B3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E12CAC6C5DD0BA1D67BC788A /* PrivacyInfo.xcprivacy */; };
+		92CDD29EF532F4C2B0CA4361 /* SecurityLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D41CFE2723F1FECAFDD878F /* SecurityLog.swift */; };
+		A4FBB093CD19AED0781A9549 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 35C647F75254BAB15BEB23C5 /* Localizable.strings */; };
+		A82172C13349C8E8F596178B /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9445983444A460402AB30A /* AuthService.swift */; };
+		B87E155202D732B80B432A06 /* TokenItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E66D54B5BA7A264B3E5AB87 /* TokenItem.swift */; };
+		BDCB05BC497FB8AB75533CF8 /* ICloudBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2405BFB2AA6AD80BBDCF9BB9 /* ICloudBackupService.swift */; };
+		BE9AB1791F5EC4DA5E27D192 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA043426A64BBE253F2DB26B /* NotificationService.swift */; };
+		C30683D0C35804897F35F10E /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34DB880FFD6245D01E4B4B1 /* KeychainService.swift */; };
+		C53F7498B53FB40EFFC98ADF /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51445B34803A6762E82E234F /* HelpView.swift */; };
+		C73215D2E7EFB620275D3CF4 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF9736D957134E66E3A627DB /* DataStore.swift */; };
+		C73B98F9B757DE9A6B0276AA /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20A1D64B426C51888F3FCA7 /* DesignTokens.swift */; };
+		CA23A836775F98B6F696DEDC /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F034D260206735979E4FDB3C /* Localization.swift */; };
+		D4426E931432995BC2ACE26F /* ImportExportHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81871B7BD1B8DC3AB82BB2F6 /* ImportExportHelper.swift */; };
+		DAC06EAF4BB633819B7A74A1 /* LockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33ADADED3BFA58B64F55CC83 /* LockView.swift */; };
+		DDD5807BD722D259C98ED69F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464DA9FD5B3961584D877FA8 /* AppDelegate.swift */; };
+		E13A22C4EA7EF8457ABCD3E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4ABD9A511607E83DC4071EDA /* Assets.xcassets */; };
+		E4F59CE00D4CE0CC5689128D /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BC32795B792DA333D08139 /* MainView.swift */; };
+		E65E6600D3F721839715CA31 /* TokenTaxonomy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9C81993FC565D188A5340D /* TokenTaxonomy.swift */; };
+		F0B3918AC15D051DDA8385E5 /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF139FF29DA42B3E6A876E6 /* PopoverView.swift */; };
+		F41A31768181B58A6E13A9E1 /* VisualEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 186DC18E6F5F519E7EF6EE03 /* VisualEffects.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0E66D54B5BA7A264B3E5AB87 /* TokenItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenItem.swift; sourceTree = "<group>"; };
+		0F9445983444A460402AB30A /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		186DC18E6F5F519E7EF6EE03 /* VisualEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualEffects.swift; sourceTree = "<group>"; };
+		2405BFB2AA6AD80BBDCF9BB9 /* ICloudBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudBackupService.swift; sourceTree = "<group>"; };
+		286B3A0F8306A67E56077391 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		28B2E7647B6836F6C12BF1F7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2B93EC43BF51E645359F647D /* TokenVaultApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenVaultApp.swift; sourceTree = "<group>"; };
+		2B9C81993FC565D188A5340D /* TokenTaxonomy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenTaxonomy.swift; sourceTree = "<group>"; };
+		33ADADED3BFA58B64F55CC83 /* LockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockView.swift; sourceTree = "<group>"; };
+		3D41CFE2723F1FECAFDD878F /* SecurityLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityLog.swift; sourceTree = "<group>"; };
+		424069268C40659D8E00FA36 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		464DA9FD5B3961584D877FA8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		4ABD9A511607E83DC4071EDA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		51445B34803A6762E82E234F /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
+		51F298C8615A073248170EE0 /* TokenEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenEditor.swift; sourceTree = "<group>"; };
+		6733EE866AF295E843151589 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		6D99676E8B748146EA77A013 /* BackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupService.swift; sourceTree = "<group>"; };
+		7B5AD6B48853C877CBFF7CFA /* ToastService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastService.swift; sourceTree = "<group>"; };
+		81871B7BD1B8DC3AB82BB2F6 /* ImportExportHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExportHelper.swift; sourceTree = "<group>"; };
+		8434F9F4C6F5595D1C006F5E /* ImportWizard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWizard.swift; sourceTree = "<group>"; };
+		84460CFA1957C41B1B5FD0DC /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
+		8CF139FF29DA42B3E6A876E6 /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
+		94CAF886AD57F127F9FDF3B6 /* SpotlightSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightSearch.swift; sourceTree = "<group>"; };
+		A6BC32795B792DA333D08139 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		AF9736D957134E66E3A627DB /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
+		B03AD845F4686753D86DDFDA /* ICloudSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudSyncService.swift; sourceTree = "<group>"; };
+		BB7F6896F6A0A0C5F3BBC3F4 /* TokenVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TokenVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C04EF3AE17820D8D0270CEF6 /* HealthCheckService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckService.swift; sourceTree = "<group>"; };
+		D20A1D64B426C51888F3FCA7 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		D8EC2EC526E7937B8EF59F76 /* ClipboardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardService.swift; sourceTree = "<group>"; };
+		E12CAC6C5DD0BA1D67BC788A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		E34DB880FFD6245D01E4B4B1 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		E9D155E64D4661CBFF943573 /* KeyboardHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHUD.swift; sourceTree = "<group>"; };
+		ED90AA59D3B14E6B0FE7F129 /* EncryptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionService.swift; sourceTree = "<group>"; };
+		F034D260206735979E4FDB3C /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		F699D965069CC7C7CCCC8FA5 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		F92CA752FEC13DC4A7AE6BB5 /* GlassViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassViewModifier.swift; sourceTree = "<group>"; };
+		FA043426A64BBE253F2DB26B /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0C698B9A01B0B9A8DC87869D /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				0F9445983444A460402AB30A /* AuthService.swift */,
+				6D99676E8B748146EA77A013 /* BackupService.swift */,
+				D8EC2EC526E7937B8EF59F76 /* ClipboardService.swift */,
+				AF9736D957134E66E3A627DB /* DataStore.swift */,
+				84460CFA1957C41B1B5FD0DC /* SettingsService.swift */,
+				7B5AD6B48853C877CBFF7CFA /* ToastService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		1C1715227DEC72726780C6AC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E12CAC6C5DD0BA1D67BC788A /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		2839F9BA3051960E5C70AFF9 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				3BDB59E199E564F259615002 /* Models */,
+				FCFE322AE386637138D907ED /* Resources */,
+				6E299A52515919F04E4B2CB7 /* Services */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		3BDB59E199E564F259615002 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F034D260206735979E4FDB3C /* Localization.swift */,
+				3D41CFE2723F1FECAFDD878F /* SecurityLog.swift */,
+				0E66D54B5BA7A264B3E5AB87 /* TokenItem.swift */,
+				2B9C81993FC565D188A5340D /* TokenTaxonomy.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		62B0D960881E36B743E7924D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				8769BBDF2ABDE4DDACC0F1F7 /* App */,
+				2839F9BA3051960E5C70AFF9 /* Core */,
+				9AB9D74DE4B1D11B3433794E /* DesignSystem */,
+				0C698B9A01B0B9A8DC87869D /* Services */,
+				7D621740E8D558345087564B /* Views */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		6E299A52515919F04E4B2CB7 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				ED90AA59D3B14E6B0FE7F129 /* EncryptionService.swift */,
+				C04EF3AE17820D8D0270CEF6 /* HealthCheckService.swift */,
+				2405BFB2AA6AD80BBDCF9BB9 /* ICloudBackupService.swift */,
+				B03AD845F4686753D86DDFDA /* ICloudSyncService.swift */,
+				81871B7BD1B8DC3AB82BB2F6 /* ImportExportHelper.swift */,
+				E34DB880FFD6245D01E4B4B1 /* KeychainService.swift */,
+				FA043426A64BBE253F2DB26B /* NotificationService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		7BB9BF51DB081C824116A6ED /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB7F6896F6A0A0C5F3BBC3F4 /* TokenVault.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7D621740E8D558345087564B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				286B3A0F8306A67E56077391 /* AboutView.swift */,
+				F699D965069CC7C7CCCC8FA5 /* DashboardView.swift */,
+				51445B34803A6762E82E234F /* HelpView.swift */,
+				8434F9F4C6F5595D1C006F5E /* ImportWizard.swift */,
+				E9D155E64D4661CBFF943573 /* KeyboardHUD.swift */,
+				33ADADED3BFA58B64F55CC83 /* LockView.swift */,
+				A6BC32795B792DA333D08139 /* MainView.swift */,
+				8CF139FF29DA42B3E6A876E6 /* PopoverView.swift */,
+				28B2E7647B6836F6C12BF1F7 /* SettingsView.swift */,
+				94CAF886AD57F127F9FDF3B6 /* SpotlightSearch.swift */,
+				51F298C8615A073248170EE0 /* TokenEditor.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		8769BBDF2ABDE4DDACC0F1F7 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				464DA9FD5B3961584D877FA8 /* AppDelegate.swift */,
+				2B93EC43BF51E645359F647D /* TokenVaultApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9AB9D74DE4B1D11B3433794E /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				D20A1D64B426C51888F3FCA7 /* DesignTokens.swift */,
+				F92CA752FEC13DC4A7AE6BB5 /* GlassViewModifier.swift */,
+				186DC18E6F5F519E7EF6EE03 /* VisualEffects.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		FBEC34926286BA1140A5473B = {
+			isa = PBXGroup;
+			children = (
+				4ABD9A511607E83DC4071EDA /* Assets.xcassets */,
+				1C1715227DEC72726780C6AC /* Resources */,
+				62B0D960881E36B743E7924D /* Sources */,
+				7BB9BF51DB081C824116A6ED /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FCFE322AE386637138D907ED /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				35C647F75254BAB15BEB23C5 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4CB50E57DB94BEEBE4A2B796 /* TokenVault */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ADB660791DE8EA9A4F4CD845 /* Build configuration list for PBXNativeTarget "TokenVault" */;
+			buildPhases = (
+				464BECEF973EB8746F840301 /* Sources */,
+				61589561812BDA5B7DC0E900 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TokenVault;
+			packageProductDependencies = (
+			);
+			productName = TokenVault;
+			productReference = BB7F6896F6A0A0C5F3BBC3F4 /* TokenVault.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ACF0E419B074F3CB0CD56432 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					4CB50E57DB94BEEBE4A2B796 = {
+						DevelopmentTeam = MAA6W8AG5P;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = E0E9229F1B0B619ED0EE9983 /* Build configuration list for PBXProject "TokenVault" */;
+			developmentRegion = "zh-Hant";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				"zh-Hant",
+			);
+			mainGroup = FBEC34926286BA1140A5473B;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7BB9BF51DB081C824116A6ED /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4CB50E57DB94BEEBE4A2B796 /* TokenVault */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		61589561812BDA5B7DC0E900 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E13A22C4EA7EF8457ABCD3E9 /* Assets.xcassets in Resources */,
+				A4FBB093CD19AED0781A9549 /* Localizable.strings in Resources */,
+				84B58C701927EDAA0EB5F1B3 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		464BECEF973EB8746F840301 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5EB5AF5A761EE20BF06617FC /* AboutView.swift in Sources */,
+				DDD5807BD722D259C98ED69F /* AppDelegate.swift in Sources */,
+				A82172C13349C8E8F596178B /* AuthService.swift in Sources */,
+				423EE0948939580CAFF03437 /* BackupService.swift in Sources */,
+				69D40337E6EB944CF8343404 /* ClipboardService.swift in Sources */,
+				01E582DED8581483DF294CCA /* DashboardView.swift in Sources */,
+				C73215D2E7EFB620275D3CF4 /* DataStore.swift in Sources */,
+				C73B98F9B757DE9A6B0276AA /* DesignTokens.swift in Sources */,
+				61254B0552BE69A6ABFC456B /* EncryptionService.swift in Sources */,
+				0BA8CBAE0F151290360605D9 /* GlassViewModifier.swift in Sources */,
+				1226556A7BF8BB9880C83246 /* HealthCheckService.swift in Sources */,
+				C53F7498B53FB40EFFC98ADF /* HelpView.swift in Sources */,
+				BDCB05BC497FB8AB75533CF8 /* ICloudBackupService.swift in Sources */,
+				6D8980252DD88098425E6207 /* ICloudSyncService.swift in Sources */,
+				D4426E931432995BC2ACE26F /* ImportExportHelper.swift in Sources */,
+				0E5ABE7256FA2783D5757AC7 /* ImportWizard.swift in Sources */,
+				347D858772EC78585EDC4562 /* KeyboardHUD.swift in Sources */,
+				C30683D0C35804897F35F10E /* KeychainService.swift in Sources */,
+				CA23A836775F98B6F696DEDC /* Localization.swift in Sources */,
+				DAC06EAF4BB633819B7A74A1 /* LockView.swift in Sources */,
+				E4F59CE00D4CE0CC5689128D /* MainView.swift in Sources */,
+				BE9AB1791F5EC4DA5E27D192 /* NotificationService.swift in Sources */,
+				F0B3918AC15D051DDA8385E5 /* PopoverView.swift in Sources */,
+				92CDD29EF532F4C2B0CA4361 /* SecurityLog.swift in Sources */,
+				2EE264BF88A7E8FF55EED8D9 /* SettingsService.swift in Sources */,
+				25EDF2316B9F532E80D4333F /* SettingsView.swift in Sources */,
+				48ACAB2CADFB686998D28BC5 /* SpotlightSearch.swift in Sources */,
+				6535646CF7DDE70C5217350D /* ToastService.swift in Sources */,
+				76D31A17D6185353A91DB53E /* TokenEditor.swift in Sources */,
+				B87E155202D732B80B432A06 /* TokenItem.swift in Sources */,
+				E65E6600D3F721839715CA31 /* TokenTaxonomy.swift in Sources */,
+				27AA521698E77555F044E191 /* TokenVaultApp.swift in Sources */,
+				F41A31768181B58A6E13A9E1 /* VisualEffects.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		35C647F75254BAB15BEB23C5 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				424069268C40659D8E00FA36 /* en */,
+				6733EE866AF295E843151589 /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		26D13FDD74302C7189FC50C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resources/TokenVault.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.wahsun.tokenvault;
+				PRODUCT_NAME = TokenVault;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		4647AE3109923D2DF1F6F258 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = MAA6W8AG5P;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		4F76AB42494AF6A53D683287 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = MAA6W8AG5P;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6CFF03EF244E75849C6B8209 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resources/TokenVault.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.wahsun.tokenvault;
+				PRODUCT_NAME = TokenVault;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ADB660791DE8EA9A4F4CD845 /* Build configuration list for PBXNativeTarget "TokenVault" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6CFF03EF244E75849C6B8209 /* Debug */,
+				26D13FDD74302C7189FC50C4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E0E9229F1B0B619ED0EE9983 /* Build configuration list for PBXProject "TokenVault" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F76AB42494AF6A53D683287 /* Debug */,
+				4647AE3109923D2DF1F6F258 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ACF0E419B074F3CB0CD56432 /* Project object */;
+}
