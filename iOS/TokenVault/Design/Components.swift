@@ -239,12 +239,26 @@ struct SlidingSegmented: View {
         .background { rail }
     }
 
+    /// The moving body: glass with the same tint-and-rim recipe as SHELL's language switch.
+    /// It used to be a flat fill with a shadow — a chip, not a lens. `matchedGeometryEffect`
+    /// stays, so the lens travels between segments rather than blinking.
+    @ViewBuilder
     private var lens: some View {
-        Capsule()
-            .fill(Theme.textPrimary.opacity(0.10))
-            .overlay(Capsule().stroke(.white.opacity(0.18), lineWidth: 0.8))
-            .shadow(color: .black.opacity(0.16), radius: 4, y: 1)
-            .matchedGeometryEffect(id: "segment", in: namespace)
+        let shape = Capsule()
+        if #available(iOS 26.0, *) {
+            shape
+                .fill(.clear)
+                .glassEffect(.regular.tint(Theme.textPrimary.opacity(0.14)).interactive(),
+                             in: shape)
+                .overlay { Capsule().stroke(.white.opacity(0.26), lineWidth: 0.8) }
+                .matchedGeometryEffect(id: "segment", in: namespace)
+        } else {
+            shape
+                .fill(Theme.textPrimary.opacity(0.10))
+                .overlay(Capsule().stroke(.white.opacity(0.18), lineWidth: 0.8))
+                .shadow(color: .black.opacity(0.16), radius: 4, y: 1)
+                .matchedGeometryEffect(id: "segment", in: namespace)
+        }
     }
 
     @ViewBuilder
