@@ -49,7 +49,7 @@ struct ToastHost: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 11)
                 .background(
-                    Capsule().fill(.regularMaterial)
+                    Color.clear.glassCapsule()
                         .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
                 )
                 .shadow(color: .black.opacity(0.18), radius: 18, y: 8)

@@ -110,10 +110,10 @@ struct VaultView: View {
                     showingEditor = true
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(.white)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(Theme.accentGradient))
+                        .frame(width: 40, height: 40)
+                        .glassCircle(tint: Theme.accent.opacity(0.75), fallback: Theme.accent)
                         .shadow(color: Theme.accent.opacity(0.35), radius: 10, y: 4)
                 }
                 .pressable()

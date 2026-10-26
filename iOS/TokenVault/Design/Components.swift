@@ -1,5 +1,57 @@
 import SwiftUI
 
+
+// MARK: - Liquid Glass
+
+/// The one place the glass recipe lives. `interactive()` gives the touch response — the lens
+/// bends and springs under the finger — which is what makes a control feel physical rather than
+/// merely translucent.
+@available(iOS 26.0, *)
+private func glassMaterial(tint: Color? = nil, interactive: Bool = true) -> Glass {
+    var glass: Glass = .regular
+    if let tint { glass = glass.tint(tint) }
+    if interactive { glass = glass.interactive() }
+    return glass
+}
+
+extension View {
+    /// Liquid Glass capsule on iOS 26; the flat surface it replaces below that.
+    @ViewBuilder
+    func glassCapsule(tint: Color? = nil,
+                      interactive: Bool = true,
+                      fallback: Color = Theme.surface) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(glassMaterial(tint: tint, interactive: interactive), in: .capsule)
+        } else {
+            background(Capsule().fill(fallback))
+        }
+    }
+
+    @ViewBuilder
+    func glassCircle(tint: Color? = nil,
+                     interactive: Bool = true,
+                     fallback: Color = Theme.surface) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(glassMaterial(tint: tint, interactive: interactive), in: .circle)
+        } else {
+            background(Circle().fill(fallback))
+        }
+    }
+
+    @ViewBuilder
+    func glassRounded(_ radius: CGFloat,
+                      tint: Color? = nil,
+                      interactive: Bool = true,
+                      fallback: Color = Theme.surface) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(glassMaterial(tint: tint, interactive: interactive),
+                        in: .rect(cornerRadius: radius, style: .continuous))
+        } else {
+            background(RoundedRectangle(cornerRadius: radius, style: .continuous).fill(fallback))
+        }
+    }
+}
+
 // MARK: - Surfaces
 
 /// The one card treatment in the app: a rounded rect on the surface colour, a single hairline,
@@ -145,8 +197,7 @@ struct RoundIconButton: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(tint)
                 .frame(width: size, height: size)
-                .background(Circle().fill(Theme.surface))
-                .overlay(Circle().stroke(Theme.hairline, lineWidth: 1))
+                .glassCircle()
         }
         .pressable()
     }
@@ -241,13 +292,10 @@ struct SearchField: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                .fill(Theme.surface)
-        )
+        .glassRounded(Theme.Radius.control, interactive: false)
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                .stroke(focused ? Theme.accent.opacity(0.5) : Theme.hairline, lineWidth: 1)
+                .stroke(focused ? Theme.accent.opacity(0.5) : .clear, lineWidth: 1)
         )
         .animation(Theme.Motion.press, value: focused)
     }
@@ -275,11 +323,9 @@ struct FilterChip: View {
             .padding(.vertical, 7)
             .background(
                 Capsule().fill(isOn ? AnyShapeStyle(Theme.accentGradient)
-                                    : AnyShapeStyle(Theme.surface))
+                                    : AnyShapeStyle(Color.clear))
             )
-            .overlay(
-                Capsule().stroke(isOn ? Color.clear : Theme.hairline, lineWidth: 1)
-            )
+            .glassCapsule(tint: isOn ? nil : nil, interactive: !isOn)
         }
         .pressable()
         .accessibilityIdentifier("filter.\(title)")
@@ -438,11 +484,7 @@ struct SecondaryButton: View {
             .foregroundStyle(destructive ? Theme.danger : Theme.textPrimary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
-            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(destructive ? Theme.danger.opacity(0.3) : Theme.hairline, lineWidth: 1)
-            )
+            .glassRounded(14, tint: destructive ? Theme.danger.opacity(0.55) : nil)
         }
         .pressable()
     }
