@@ -52,20 +52,32 @@ struct Surface: ViewModifier {
         self.cornerRadius = cornerRadius
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(level.backgroundColor)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius)
-                            .fill(level.material)
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(level.strokeColor, lineWidth: 1)
-            )
+        if #available(macOS 26.0, *) {
+            // The system's own Liquid Glass. The opaque plate this replaced was a deliberate
+            // detour; on a macOS that has the material, the app belongs to the platform.
+            content
+                .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(level.strokeColor, lineWidth: 1)
+                )
+        } else {
+            content
+                .background(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(level.backgroundColor)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .fill(level.material)
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(level.strokeColor, lineWidth: 1)
+                )
+        }
     }
 }
 
@@ -84,16 +96,20 @@ struct CardSurface: ViewModifier {
         self.cornerRadius = cornerRadius
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
+        if #available(macOS 26.0, *) {
+            glassCard(content)
+        } else {
+            opaqueCard(content)
+        }
+    }
+
+    @available(macOS 26.0, *)
+    private func glassCard(_ content: Content) -> some View {
         content
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color(.controlBackgroundColor))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius)
-                            .fill(.ultraThinMaterial)
-                    )
-            )
+            .glassEffect(.regular.interactive(),
+                         in: .rect(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(
@@ -115,6 +131,30 @@ struct CardSurface: ViewModifier {
                     : DS.Card.normalShadowY
             )
             // Apple HIG: lift 2px on hover — do NOT scale.
+            .offset(y: (isHovering || isFocused) ? -DS.Card.hoverLift : 0)
+            .animation(DS.Animation.easeOut, value: isHovering)
+            .animation(DS.Animation.easeOut, value: isFocused)
+    }
+
+    private func opaqueCard(_ content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color(.controlBackgroundColor))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .fill(.ultraThinMaterial)
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(
+                        isFocused
+                            ? DS.Color.accent.opacity(0.35)
+                            : Color.primary.opacity(isHovering ? 0.10 : 0.06),
+                        lineWidth: isFocused ? 1.5 : 1
+                    )
+            )
             .offset(y: (isHovering || isFocused) ? -DS.Card.hoverLift : 0)
             .animation(DS.Animation.easeOut, value: isHovering)
             .animation(DS.Animation.easeOut, value: isFocused)
