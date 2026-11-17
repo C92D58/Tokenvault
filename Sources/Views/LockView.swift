@@ -13,10 +13,12 @@ struct LockView: View {
 
     var body: some View {
         ZStack {
-            // Glass material background with particles
+            // Neutral ground with a faint light and drifting motes. The accent is spent on the
+            // mark and the one button; a tinted wash behind everything reads as haze.
             Color(.windowBackgroundColor).opacity(0.3)
-            DS.Color.accentGradientSubtle.opacity(0.5)
-            ParticleField(count: 20, color: DS.Color.accentLight)
+            RadialGradient(colors: [Color.white.opacity(0.045), .clear],
+                           center: .top, startRadius: 10, endRadius: 420)
+            ParticleField(count: 20, color: Color.white.opacity(0.35))
 
             VStack(spacing: 0) {
                 Spacer()
@@ -35,8 +37,8 @@ struct LockView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color(red: 0.165, green: 0.110, blue: 0.306),
-                                         Color(red: 0.090, green: 0.063, blue: 0.165)],
+                                colors: [Color(red: 0.024, green: 0.145, blue: 0.137),
+                                         Color(red: 0.012, green: 0.063, blue: 0.059)],
                                 startPoint: .topLeading, endPoint: .bottomTrailing
                             )
                         )
@@ -93,10 +95,10 @@ struct LockView: View {
                         Text("使用 \(auth.biometryType) 解鎖")
                             .font(.system(size: 13, weight: .medium))
                     }
+                    .foregroundStyle(DS.Color.onAccent)
                     .padding(.horizontal, 32).padding(.vertical, 12)
-                    .background(Capsule().fill(DS.Color.accent.opacity(0.12)))
-                    .overlay(Capsule().stroke(DS.Color.accent.opacity(0.2), lineWidth: 1))
-                    .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
+                    .background(Capsule().fill(DS.Color.accentGradient))
+                    .shadow(color: DS.Color.accent.opacity(0.28), radius: 12, y: 5)
                 }
                 .buttonStyle(.plain).focusEffectDisabled().keyboardShortcut(.return)
 

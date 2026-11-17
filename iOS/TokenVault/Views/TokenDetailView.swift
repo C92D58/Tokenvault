@@ -42,7 +42,7 @@ struct TokenDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("關閉") { dismiss() }
+                    Button(L("關閉")) { dismiss() }
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
@@ -51,7 +51,7 @@ struct TokenDetailView: View {
                         Image(systemName: "pencil")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
                     .accessibilityIdentifier("detail.edit")
                 }
             }
@@ -64,15 +64,15 @@ struct TokenDetailView: View {
                 JWTSheet(decoded: decoded)
             }
         }
-        .confirmationDialog("移到垃圾桶？", isPresented: $confirmTrash, titleVisibility: .visible) {
-            Button("移到垃圾桶", role: .destructive) {
+        .confirmationDialog(L("移到垃圾桶？"), isPresented: $confirmTrash, titleVisibility: .visible) {
+            Button(L("移到垃圾桶"), role: .destructive) {
                 vault.trash(token)
                 dismiss()
                 toast.show("已移到垃圾桶", symbol: "trash.fill", tint: Theme.warning)
             }
-            Button("取消", role: .cancel) {}
+            Button(L("取消"), role: .cancel) {}
         } message: {
-            Text("30 天內可以從垃圾桶復原。")
+            Text(L("30 天內可以從垃圾桶復原。"))
         }
     }
 
@@ -126,7 +126,7 @@ struct TokenDetailView: View {
                 } label: {
                     Label(revealed ? "隱藏" : "顯示", systemImage: revealed ? "eye.slash" : "eye")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("detail.reveal")
@@ -152,9 +152,9 @@ struct TokenDetailView: View {
                 } label: {
                     HStack(spacing: 7) {
                         Image(systemName: "doc.on.doc.fill").font(.system(size: 13, weight: .semibold))
-                        Text("複製密鑰").font(.system(size: 14, weight: .semibold))
+                        Text(L("複製密鑰")).font(.system(size: 14, weight: .semibold))
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
                     .background(RoundedRectangle(cornerRadius: 13, style: .continuous)
@@ -183,20 +183,20 @@ struct TokenDetailView: View {
             HStack {
                 Image(systemName: "ticket.fill")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                Text("這是一個 JWT")
+                    .foregroundStyle(Theme.textSecondary)
+                Text(L("這是一個 JWT"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Button("解碼") {
+                Button(L("解碼")) {
                     decoded = JWTDecoder.decode(token.decryptedValue())
                     showingJWT = decoded != nil
                 }
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.textSecondary)
             }
             if let decoded {
-                Text(decoded.isExpired ? "已於 \(decoded.expiryLabel) 過期" : "有效期限 \(decoded.expiryLabel)")
+                Text(decoded.isExpired ? L("已於 %@ 過期", decoded.expiryLabel) : L("有效期限 %@", decoded.expiryLabel))
                     .font(Theme.caption)
                     .foregroundStyle(decoded.isExpired ? Theme.danger : Theme.textTertiary)
             }
@@ -272,8 +272,8 @@ struct TokenDetailView: View {
                                      clearAfter: settings.clipboardClearSeconds)
         vault.recordUse(token)
         let note = settings.clipboardClearSeconds > 0
-            ? "已複製 · \(settings.clipboardClearSeconds) 秒後自動清除"
-            : "已複製密鑰"
+            ? L("已複製 · %lld 秒後自動清除", settings.clipboardClearSeconds)
+            : L("已複製密鑰")
         toast.show(note, symbol: "doc.on.doc.fill", tint: Theme.accent)
     }
 }
@@ -289,11 +289,11 @@ struct FlowTags: View {
             ForEach(tags, id: \.self) { tag in
                 Text("#\(tag)")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 5)
                     .frame(maxWidth: .infinity)
-                    .background(Capsule().fill(Theme.accentSoft))
+                    .background(Capsule().fill(Theme.surfaceRaised))
             }
         }
     }
@@ -336,7 +336,7 @@ struct JWTSheet: View {
                                 HStack(alignment: .top, spacing: Theme.Space.s) {
                                     Text(claim.key)
                                         .font(Theme.monoSmall)
-                                        .foregroundStyle(Theme.accent)
+                                        .foregroundStyle(Theme.textSecondary)
                                         .frame(width: 96, alignment: .leading)
                                     Text(claim.value)
                                         .font(Theme.monoSmall)
@@ -352,12 +352,12 @@ struct JWTSheet: View {
                     .padding(.bottom, Theme.Space.xl)
                 }
             }
-            .navigationTitle("JWT 解碼")
+            .navigationTitle(L("JWT 解碼"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
-                        .foregroundStyle(Theme.accent)
+                    Button(L("完成")) { dismiss() }
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
         }

@@ -33,22 +33,22 @@ struct TrashView: View {
                     }
                 }
             }
-            .navigationTitle("垃圾桶")
+            .navigationTitle(L("垃圾桶"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
-                        .foregroundStyle(Theme.accent)
+                    Button(L("完成")) { dismiss() }
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
-            .confirmationDialog("清空垃圾桶？", isPresented: $confirmEmpty, titleVisibility: .visible) {
-                Button("永久刪除全部", role: .destructive) {
+            .confirmationDialog(L("清空垃圾桶？"), isPresented: $confirmEmpty, titleVisibility: .visible) {
+                Button(L("永久刪除全部"), role: .destructive) {
                     vault.emptyTrash()
                     toast.show("垃圾桶已清空", symbol: "trash", tint: Theme.warning)
                 }
-                Button("取消", role: .cancel) {}
+                Button(L("取消"), role: .cancel) {}
             } message: {
-                Text("此操作無法復原。")
+                Text(L("此操作無法復原。"))
             }
         }
     }
@@ -62,7 +62,7 @@ struct TrashView: View {
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 if let deleted = token.deletedAt {
-                    Text("刪除於 \(deleted.formatted(date: .abbreviated, time: .shortened))")
+                    Text(L("刪除於 %@", deleted.formatted(date: .abbreviated, time: .shortened)))
                         .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                 }
@@ -72,12 +72,12 @@ struct TrashView: View {
                 vault.restore(token)
                 toast.show("已復原", symbol: "arrow.uturn.backward", tint: Theme.accent)
             } label: {
-                Text("復原")
+                Text(L("復原"))
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
                     .padding(.horizontal, 11)
                     .padding(.vertical, 6)
-                    .background(Capsule().fill(Theme.accentSoft))
+                    .background(Capsule().fill(Theme.surfaceRaised))
             }
             .buttonStyle(.plain)
         }
@@ -100,40 +100,45 @@ struct SecurityLogView: View {
                     .frame(maxHeight: .infinity, alignment: .center)
                 } else {
                     List {
-                        Section {
-                            ForEach(log.entries) { entry in
-                                row(entry)
-                                    .listRowInsets(EdgeInsets(top: 5, leading: Theme.inset,
-                                                              bottom: 5, trailing: Theme.inset))
-                                    .listRowSeparator(.hidden)
-                                    .listRowBackground(Color.clear)
-                            }
-                        } footer: {
-                            Text("最多保留 500 筆，只在這一台裝置上。")
-                                .font(Theme.caption)
-                                .foregroundStyle(Theme.textTertiary)
-                                .padding(.top, Theme.Space.s)
-                                .padding(.bottom, 90)
+                        ForEach(log.entries) { entry in
+                            row(entry)
+                                .listRowInsets(EdgeInsets(top: 5, leading: Theme.inset,
+                                                          bottom: 5, trailing: Theme.inset))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
                         }
+                        // A section footer draws a separator, and under the last card that line
+                        // hung in empty space. The note is an ordinary row instead, and it carries
+                        // the spacer that keeps the list clear of the floating tab bar.
+                        Text(L("最多保留 500 筆，只在這一台裝置上。"))
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, Theme.Space.s)
+                            .padding(.bottom, 76)
+                            .listRowInsets(EdgeInsets(top: 0, leading: Theme.inset,
+                                                      bottom: 0, trailing: Theme.inset))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                 }
             }
-            .navigationTitle("安全日誌")
+            .navigationTitle(L("安全日誌"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if !log.entries.isEmpty {
-                        Button("清空") { confirmClear = true }
+                        Button(L("清空")) { confirmClear = true }
                             .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(Theme.danger)
                     }
                 }
             }
-            .confirmationDialog("清空稽核日誌？", isPresented: $confirmClear, titleVisibility: .visible) {
-                Button("清空", role: .destructive) { log.clear() }
-                Button("取消", role: .cancel) {}
+            .confirmationDialog(L("清空稽核日誌？"), isPresented: $confirmClear, titleVisibility: .visible) {
+                Button(L("清空"), role: .destructive) { log.clear() }
+                Button(L("取消"), role: .cancel) {}
             }
         }
     }
@@ -148,13 +153,16 @@ struct SecurityLogView: View {
                     .fill(tint(for: entry.action).opacity(0.12)))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(L(entry.action.rawValue))  \(entry.tokenName)")
+                Text(title(for: entry))
                     .font(Theme.callout)
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
-                Text(L(entry.provider))
-                    .font(Theme.caption)
-                    .foregroundStyle(Theme.textTertiary)
+                if hasProvider(entry) {
+                    Text(L(entry.provider))
+                        .font(Theme.caption)
+                        .foregroundStyle(Theme.textTertiary)
+                        .lineLimit(1)
+                }
             }
             Spacer()
             Text(entry.relativeTime)
@@ -162,6 +170,21 @@ struct SecurityLogView: View {
                 .foregroundStyle(Theme.textTertiary)
         }
         .cardSurface(radius: Theme.Radius.card, padding: 11)
+    }
+
+    /// "解鎖" alone when the entry has no subject, "複製  OpenAI 專案金鑰" when it has one.
+    private func title(for entry: SecurityLogEntry) -> String {
+        let verb = L(entry.action.rawValue)
+        let subject = entry.tokenName.trimmingCharacters(in: .whitespaces)
+        guard !subject.isEmpty, subject != "—" else { return verb }
+        return "\(verb)  \(subject)"
+    }
+
+    /// Lock and unlock entries carry a placeholder provider; printing it drew a lone dash under
+    /// every one of them.
+    private func hasProvider(_ entry: SecurityLogEntry) -> Bool {
+        let provider = entry.provider.trimmingCharacters(in: .whitespaces)
+        return !provider.isEmpty && provider != "—"
     }
 
     private func tint(for action: SecurityLogEntry.Action) -> Color {

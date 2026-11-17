@@ -105,7 +105,7 @@ final class AppState: ObservableObject {
             isLocked = false
             return
         }
-        let ok = await auth.authenticate(reason: "解鎖 TokenVault 以存取你的 API 金鑰")
+        let ok = await auth.authenticate(reason: L("解鎖 TokenVault 以存取你的 API 金鑰"))
         if ok {
             isLocked = false
             SecurityLogService.shared.log(.unlocked, tokenID: UUID(), name: "—", provider: "—")

@@ -28,15 +28,15 @@ func drawMark(in ctx: CGContext) {
     let center = CGPoint(x: s * 0.5, y: s * 0.5)
     let cs = CGColorSpaceCreateDeviceRGB()
 
-    // Background: deep violet → near-black, lit from the top-left.
+    // Background: deep teal → near-black petrol, lit from the top-left.
     let bg = CGGradient(colorsSpace: cs,
-                        colors: [color(0.36, 0.24, 0.78), color(0.16, 0.11, 0.34), color(0.05, 0.04, 0.09)] as CFArray,
+                        colors: [color(0.043, 0.220, 0.208), color(0.012, 0.078, 0.075), color(0.004, 0.028, 0.027)] as CFArray,
                         locations: [0, 0.55, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: s), end: CGPoint(x: s, y: 0), options: [])
 
-    // Accent bloom behind the door.
+    // Accent bloom behind the door — bright cyan, the brand's one loud colour.
     let bloom = CGGradient(colorsSpace: cs,
-                           colors: [color(0.62, 0.45, 1.0, 0.55), color(0.62, 0.45, 1.0, 0)] as CFArray,
+                           colors: [color(0.208, 0.882, 0.815, 0.50), color(0.208, 0.882, 0.815, 0)] as CFArray,
                            locations: [0, 1])!
     ctx.drawRadialGradient(bloom, startCenter: CGPoint(x: s * 0.5, y: s * 0.55), startRadius: 0,
                            endCenter: CGPoint(x: s * 0.5, y: s * 0.55), endRadius: s * 0.52, options: [])
@@ -57,8 +57,9 @@ func drawMark(in ctx: CGContext) {
     ctx.saveGState()
     ctx.addPath(CGPath(ellipseIn: faceRect, transform: nil))
     ctx.clip()
+    // The disc is polished cyan metal: bright at the top-left, deep teal at the bottom-right.
     let face = CGGradient(colorsSpace: cs,
-                          colors: [color(0.74, 0.62, 1.0, 0.95), color(0.45, 0.31, 0.88, 0.95), color(0.27, 0.17, 0.58, 0.95)] as CFArray,
+                          colors: [color(0.639, 0.973, 0.937, 0.95), color(0.114, 0.741, 0.686, 0.95), color(0.024, 0.361, 0.337, 0.95)] as CFArray,
                           locations: [0, 0.5, 1])!
     ctx.drawLinearGradient(face, start: CGPoint(x: faceRect.minX, y: faceRect.maxY),
                            end: CGPoint(x: faceRect.maxX, y: faceRect.minY), options: [])
@@ -85,7 +86,7 @@ func drawMark(in ctx: CGContext) {
     }
 
     // Keyhole: a dot with a stem.
-    ctx.setFillColor(color(0.09, 0.06, 0.16, 0.92))
+    ctx.setFillColor(color(0.008, 0.055, 0.052, 0.92))
     let holeR = s * 0.052
     ctx.fillEllipse(in: CGRect(x: center.x - holeR, y: center.y - holeR + s * 0.012,
                                width: holeR * 2, height: holeR * 2))
@@ -152,7 +153,7 @@ func renderMacMaster() -> CGImage {
                   blur: canvas * 0.026,
                   color: color(0, 0, 0, 0.45))
     ctx.addPath(body)
-    ctx.setFillColor(color(0.08, 0.06, 0.14, 1))
+    ctx.setFillColor(color(0.008, 0.055, 0.052, 1))
     ctx.fillPath()
     ctx.restoreGState()
 

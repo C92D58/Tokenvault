@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Design System Tokens
 // Centralized design parameters for the macOS 26 glass redesign.
@@ -12,12 +13,32 @@ enum DS {
     // MARK: - Brand Colors
 
     enum Color {
-        /// Primary accent — soft purple
-        static let accent = SwiftUI.Color(red: 0.60, green: 0.47, blue: 0.98)
+        /// Resolves per appearance: the bright cyan only works on the dark ground, so the light
+        /// appearance gets a deeper teal that keeps its contrast on paper.
+        static func adaptive(_ light: NSColor, _ dark: NSColor) -> SwiftUI.Color {
+            SwiftUI.Color(nsColor: NSColor(name: nil) { appearance in
+                appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
+            })
+        }
+
+        /// Primary accent — bright cyan, on a neutral dark ground
+        static let accent = adaptive(
+            NSColor(srgbRed: 0.043, green: 0.478, blue: 0.447, alpha: 1),   // #0B7A72
+            NSColor(srgbRed: 0.208, green: 0.882, blue: 0.815, alpha: 1))   // #35E1D0
         /// Light accent variant
-        static let accentLight = SwiftUI.Color(red: 0.72, green: 0.62, blue: 0.99)
+        static let accentLight = adaptive(
+            NSColor(srgbRed: 0.071, green: 0.655, blue: 0.600, alpha: 1),   // #12A79A
+            NSColor(srgbRed: 0.490, green: 0.953, blue: 0.902, alpha: 1))   // #7DF3E6
         /// Dark accent variant
-        static let accentDark = SwiftUI.Color(red: 0.48, green: 0.35, blue: 0.85)
+        static let accentDark = adaptive(
+            NSColor(srgbRed: 0.031, green: 0.388, blue: 0.361, alpha: 1),   // #08635C
+            NSColor(srgbRed: 0.059, green: 0.635, blue: 0.592, alpha: 1))   // #0FA297
+
+        /// The literal brand cyan — glows and blooms that never sit on paper.
+        static let accentBright = SwiftUI.Color(red: 0.208, green: 0.882, blue: 0.815)   // #35E1D0
+
+        /// Ink that sits ON the bright gradient — white disappears on cyan, petrol does not.
+        static let onAccent = SwiftUI.Color(red: 0.016, green: 0.075, blue: 0.071)        // #041312
 
         /// Accent gradient used across the app
         static let accentGradient = LinearGradient(

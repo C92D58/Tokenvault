@@ -41,7 +41,7 @@ enum TokenCategory: String, Codable, CaseIterable {
 
     /// Localized label. `rawValue` is both the lookup key and the persisted value, so the
     /// Chinese source string doubles as the key for `Localizable.strings`.
-    var displayName: String { String(localized: String.LocalizationValue(rawValue)) }
+    var displayName: String { L(rawValue) }
     var icon: String {
         switch self {
         case .ai: return "brain.head.profile"
@@ -62,9 +62,9 @@ enum TokenCategory: String, Codable, CaseIterable {
         case .ai: return Color(red: 0.06, green: 0.64, blue: 0.50)       // teal
         case .cloud: return Color(red: 0.95, green: 0.50, blue: 0.13)      // orange
         case .database: return Color(red: 0.23, green: 0.51, blue: 0.96)   // blue
-        case .social: return Color(red: 0.49, green: 0.23, blue: 0.93)     // violet
-        case .payment: return Color(red: 0.39, green: 0.36, blue: 1.0)     // indigo
-        case .ssh: return Color(red: 0.60, green: 0.47, blue: 0.98)        // accent
+        case .social: return Color(red: 0.91, green: 0.27, blue: 0.48)     // rose
+        case .payment: return Color(red: 0.94, green: 0.40, blue: 0.31)    // coral
+        case .ssh: return Color(red: 0.13, green: 0.72, blue: 0.66)        // brand cyan
         case .jwt: return Color(red: 0.96, green: 0.62, blue: 0.04)        // amber
         case .certificate: return Color(red: 0.20, green: 0.78, blue: 0.35) // green
         case .server: return Color(red: 0.42, green: 0.45, blue: 0.50)     // gray
@@ -90,7 +90,7 @@ enum TokenKind: String, Codable, CaseIterable {
 
     /// Localized label. `rawValue` is both the lookup key and the persisted value, so the
     /// Chinese source string doubles as the key for `Localizable.strings`.
-    var displayName: String { String(localized: String.LocalizationValue(rawValue)) }
+    var displayName: String { L(rawValue) }
     var icon: String {
         switch self {
         case .apiKey: return "key.horizontal.fill"
@@ -134,7 +134,7 @@ enum TokenProvider: String, Codable, CaseIterable {
     case custom = "自訂"
 
     /// 顯示名稱。
-    var displayName: String { String(localized: String.LocalizationValue(rawValue)) }
+    var displayName: String { L(rawValue) }
     var label: String { displayName }
 
     var icon: String {

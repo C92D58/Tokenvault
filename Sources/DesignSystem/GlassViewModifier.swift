@@ -186,7 +186,7 @@ struct AmbientGlow: ViewModifier {
     let color: Color
     let radius: CGFloat
 
-    init(color: Color = Color(red: 0.60, green: 0.47, blue: 0.98), radius: CGFloat = 40) {
+    init(color: Color = DS.Color.accent, radius: CGFloat = 40) {
         self.color = color
         self.radius = radius
     }
@@ -246,7 +246,7 @@ extension View {
     }
 
     /// Apply ambient glow background.
-    func ambientGlow(color: Color = Color(red: 0.60, green: 0.47, blue: 0.98), radius: CGFloat = 40) -> some View {
+    func ambientGlow(color: Color = DS.Color.accent, radius: CGFloat = 40) -> some View {
         modifier(AmbientGlow(color: color, radius: radius))
     }
 

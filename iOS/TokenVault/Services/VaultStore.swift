@@ -26,9 +26,9 @@ enum VaultFilter: Hashable {
 
     var label: String {
         switch self {
-        case .all: return "全部"
-        case .favorites: return "收藏"
-        case .expiring: return "即將到期"
+        case .all: return L("全部")
+        case .favorites: return L("收藏")
+        case .expiring: return L("即將到期")
         case .category(let c): return c.rawValue
         }
     }
@@ -215,7 +215,7 @@ final class VaultStore: ObservableObject {
 
     // MARK: - Mutations
 
-    func add(_ token: TokenItem, note: String = "已加密儲存") {
+    func add(_ token: TokenItem) {
         tokens.append(token)
         commit(touching: token) {
             SecurityLogService.shared.log(.created, tokenID: token.id, name: token.name,
@@ -341,10 +341,10 @@ final class VaultStore: ObservableObject {
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
 
         guard let data = try? Data(contentsOf: url) else {
-            return ImportReport(failure: "無法讀取檔案")
+            return ImportReport(failure: L("無法讀取檔案"))
         }
         guard let text = String(data: data, encoding: .utf8) else {
-            return ImportReport(failure: "檔案不是 UTF-8 文字")
+            return ImportReport(failure: L("檔案不是 UTF-8 文字"))
         }
         return importText(text, filename: url.lastPathComponent)
     }
@@ -357,7 +357,7 @@ final class VaultStore: ObservableObject {
         if ext == "json" || text.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") {
             guard let data = text.data(using: .utf8),
                   let snapshot = try? decoder.decode(Snapshot.self, from: data) else {
-                return ImportReport(failure: "JSON 備份格式無法辨識")
+                return ImportReport(failure: L("JSON 備份格式無法辨識"))
             }
 
             for incoming in snapshot.tokens {
@@ -384,7 +384,7 @@ final class VaultStore: ObservableObject {
         } else {
             // .env and plain text: KEY=VALUE per line.
             let pairs = BackupEnvParser.parse(text)
-            guard !pairs.isEmpty else { return ImportReport(failure: "找不到 KEY=VALUE 形式的密鑰") }
+            guard !pairs.isEmpty else { return ImportReport(failure: L("找不到 KEY=VALUE 形式的密鑰")) }
             for pair in pairs {
                 let token = TokenItem(name: pair.name, plainValue: pair.value, note: pair.note)
                 merge(token, into: &report)
@@ -393,7 +393,7 @@ final class VaultStore: ObservableObject {
 
         if report.added > 0 || report.updated > 0 {
             SecurityLogService.shared.log(.imported, tokenID: UUID(),
-                                          name: filename, provider: "檔案")
+                                          name: filename, provider: L("檔案"))
             save()
             objectWillChange.send()
             ICloudSyncService.shared.requestSync()
@@ -421,14 +421,14 @@ final class VaultStore: ObservableObject {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .encryptedJSON: return "加密 JSON"
+            case .encryptedJSON: return L("加密 JSON")
             case .env: return ".env"
             case .csv: return "CSV"
             }
         }
         var filename: String {
             switch self {
-            case .encryptedJSON: return "TokenVault-備份.json"
+            case .encryptedJSON: return "TokenVault-backup.json"
             case .env: return "tokens.env"
             case .csv: return "tokens.csv"
             }
@@ -463,14 +463,14 @@ final class VaultStore: ObservableObject {
         groups = [work, personal]
 
         let samples: [(String, String, TokenProvider, TokenCategory, TokenKind, TokenEnvironment, String, [String], UUID?)] = [
-            (L("OpenAI 專案金鑰"), "sk-proj-8fJ2kLmQ7vRtY3nPqXwZaB4cDeGhI1jK", .openai, .ai, .apiKey, .production, "計費帳號 · 團隊共用", ["llm", "prod"], work.id),
+            (L("OpenAI 專案金鑰"), "sk-proj-8fJ2kLmQ7vRtY3nPqXwZaB4cDeGhI1jK", .openai, .ai, .apiKey, .production, L("計費帳號 · 團隊共用"), ["llm", "prod"], work.id),
             (L("GitHub 個人存取權杖"), "ghp_9dK2mPq7RtY4nXwZbA1cEfGhIjKlMnOpQrSt", .github, .other, .oauth, .development, "repo + workflow scope", ["ci"], work.id),
-            ("Cloudflare API Token", "cf_3xY7bN2mLpQ9vRtK4wZaB6cDeH1jF8gI5kSn", .cloudflare, .cloud, .apiKey, .production, "Zone.DNS 編輯權限", ["dns"], work.id),
-            (L("Stripe 測試密鑰"), "sk_test_51QmZkLpQ7vRtY3nPqXwZaB4cDeGhI1jK", .stripe, .payment, .apiKey, .staging, "訂閱流程測試", ["pay"], personal.id),
-            ("Claude API", "sk-ant-api03-Kq7RtY3nPqXwZaB4cDeGhI1jKlMnOpQrStUvWx", .claude, .ai, .apiKey, .production, "長文本摘要服務", ["llm"], personal.id),
+            ("Cloudflare API Token", "cf_3xY7bN2mLpQ9vRtK4wZaB6cDeH1jF8gI5kSn", .cloudflare, .cloud, .apiKey, .production, L("Zone.DNS 編輯權限"), ["dns"], work.id),
+            (L("Stripe 測試密鑰"), "sk_test_51QmZkLpQ7vRtY3nPqXwZaB4cDeGhI1jK", .stripe, .payment, .apiKey, .staging, L("訂閱流程測試"), ["pay"], personal.id),
+            ("Claude API", "sk-ant-api03-Kq7RtY3nPqXwZaB4cDeGhI1jKlMnOpQrStUvWx", .claude, .ai, .apiKey, .production, L("長文本摘要服務"), ["llm"], personal.id),
             (L("伺服器 SSH 私鑰"), "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAA\n-----END OPENSSH PRIVATE KEY-----", .custom, .ssh, .sshKey, .production, "srv.wahsun.org · port 28898", ["infra"], personal.id),
-            (L("Tailscale 驗證金鑰"), "tskey-auth-kQ7RtY3nPqXwZaB4cDeGhI1jK", .tailscale, .server, .apiKey, .development, "可重複使用 · 90 天", ["vpn"], work.id),
-            (L("JWT 範例（除錯用）"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ3YWhzdW4iLCJyb2xlIjoiZGV2IiwiaWF0IjoxNzYwMDAwMDAwLCJleHAiOjE3OTAwMDAwMDB9.c2lnbmF0dXJlLXBsYWNlaG9sZGVy", .custom, .jwt, .jwt, .development, "可在工具頁解碼", ["debug"], nil)
+            (L("Tailscale 驗證金鑰"), "tskey-auth-kQ7RtY3nPqXwZaB4cDeGhI1jK", .tailscale, .server, .apiKey, .development, L("可重複使用 · 90 天"), ["vpn"], work.id),
+            (L("JWT 範例（除錯用）"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ3YWhzdW4iLCJyb2xlIjoiZGV2IiwiaWF0IjoxNzYwMDAwMDAwLCJleHAiOjE3OTAwMDAwMDB9.c2lnbmF0dXJlLXBsYWNlaG9sZGVy", .custom, .jwt, .jwt, .development, L("可在工具頁解碼"), ["debug"], nil)
         ]
 
         for sample in samples {
@@ -509,7 +509,7 @@ enum BackupEnvParser {
             }
             value = value.trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
             guard !value.isEmpty else { return nil }
-            return Pair(name: name, value: value, note: "從 .env 匯入")
+            return Pair(name: name, value: value, note: L("從 .env 匯入"))
         }
     }
 }

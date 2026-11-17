@@ -14,7 +14,7 @@ enum ImportExportHelper {
                         parts[1].trimmingCharacters(in: .whitespaces)
                             .replacingOccurrences(of: "\"", with: "")
                             .replacingOccurrences(of: "'", with: ""),
-                        "從 .env 匯入")
+                        L("從 .env 匯入"))
             }
     }
 

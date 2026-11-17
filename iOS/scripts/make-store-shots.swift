@@ -4,7 +4,7 @@
 //
 //      swift scripts/make-store-shots.swift <raw-dir> <out-dir>
 //
-//  Raw captures keep the app's own pixels; this only adds the brand frame: a headline, a violet
+//  Raw captures keep the app's own pixels; this only adds the brand frame: a headline, a deep teal
 //  ground, and the device screen bleeding into the bottom edge. Regenerate rather than retouch.
 //
 
@@ -69,13 +69,13 @@ func rect(x: CGFloat, top: CGFloat, w: CGFloat, h: CGFloat) -> CGRect {
 
 func drawBackground(_ ctx: CGContext) {
     let bg = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                        colors: [color(0.055, 0.043, 0.086), color(0.086, 0.065, 0.145), color(0.043, 0.035, 0.070)] as CFArray,
+                        colors: [color(0.012, 0.055, 0.052), color(0.024, 0.102, 0.098), color(0.008, 0.035, 0.034)] as CFArray,
                         locations: [0, 0.55, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: canvasH), end: CGPoint(x: canvasW, y: 0), options: [])
 
-    // Violet bloom behind the device's top edge.
+    // Cyan bloom behind the device's top edge.
     let bloom = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                           colors: [color(0.55, 0.40, 1.0, 0.34), color(0.55, 0.40, 1.0, 0)] as CFArray,
+                           colors: [color(0.208, 0.882, 0.815, 0.30), color(0.208, 0.882, 0.815, 0)] as CFArray,
                            locations: [0, 1])!
     ctx.drawRadialGradient(bloom,
                            startCenter: CGPoint(x: canvasW * 0.5, y: canvasH * 0.72), startRadius: 0,

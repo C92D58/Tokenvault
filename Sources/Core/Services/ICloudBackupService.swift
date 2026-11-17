@@ -28,7 +28,8 @@ final class ICloudBackupService: ObservableObject {
             case .idle(let date):
                 guard let date else { return L("已啟用，等待第一次備份") }
                 let f = DateFormatter()
-                f.dateFormat = "M月d日 HH:mm"
+                f.locale = LanguageStore.shared.locale
+                f.setLocalizedDateFormatFromTemplate("MMMd HH:mm")
                 return L("上次備份 %@", f.string(from: date))
             case .working: return L("備份中…")
             case .failed(let why): return L("失敗：%@", why)

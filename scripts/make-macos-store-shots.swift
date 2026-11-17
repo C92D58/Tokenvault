@@ -52,24 +52,24 @@ func color(_ hex: UInt32, _ a: CGFloat = 1) -> NSColor {
 func drawBackground(_ ctx: CGContext) {
     let space = CGColorSpaceCreateDeviceRGB()
     let gradient = CGGradient(colorsSpace: space,
-                              colors: [color(0x0B0716).cgColor, color(0x1A0F31).cgColor,
-                                       color(0x2A1250).cgColor] as CFArray,
+                              colors: [color(0x04100F).cgColor, color(0x08201E).cgColor,
+                                       color(0x0B2E2A).cgColor] as CFArray,
                               locations: [0, 0.55, 1])!
     ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: H),
                            end: CGPoint(x: W, y: 0), options: [])
 
-    // Violet glow behind the window.
+    // Cyan glow behind the window.
     let glow = CGGradient(colorsSpace: space,
-                          colors: [color(0x7C3AED, 0.42).cgColor, color(0x7C3AED, 0).cgColor] as CFArray,
+                          colors: [color(0x35E1D0, 0.38).cgColor, color(0x35E1D0, 0).cgColor] as CFArray,
                           locations: [0, 1])!
     ctx.drawRadialGradient(glow,
                            startCenter: CGPoint(x: W * 0.5, y: H * 0.42), startRadius: 0,
                            endCenter: CGPoint(x: W * 0.5, y: H * 0.42), endRadius: W * 0.62,
                            options: [])
 
-    // Warm ember bottom-left, keeps it from reading as generic purple SaaS.
+    // Warm ember bottom-left, keeps it from reading as generic cyan SaaS.
     let ember = CGGradient(colorsSpace: space,
-                           colors: [color(0xF97316, 0.16).cgColor, color(0xF97316, 0).cgColor] as CFArray,
+                           colors: [color(0xF97316, 0.13).cgColor, color(0xF97316, 0).cgColor] as CFArray,
                            locations: [0, 1])!
     ctx.drawRadialGradient(ember,
                            startCenter: CGPoint(x: W * 0.06, y: H * 0.04), startRadius: 0,

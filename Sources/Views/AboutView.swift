@@ -89,7 +89,8 @@ struct AboutView: View {
         .background(
             ZStack {
                 Rectangle().fill(.regularMaterial)
-                DS.Color.accentGradientSubtle.opacity(0.45)
+                RadialGradient(colors: [DS.Color.accent.opacity(0.05), .clear],
+                               center: .topTrailing, startRadius: 6, endRadius: 300)
                     .allowsHitTesting(false)
             }
         )

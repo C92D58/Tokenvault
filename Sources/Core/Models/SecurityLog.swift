@@ -19,7 +19,7 @@ struct SecurityLogEntry: Identifiable, Codable, Equatable {
 
     enum Action: String, Codable, CaseIterable {
         /// Localized verb; `rawValue` is the persisted value.
-        var displayName: String { String(localized: String.LocalizationValue(rawValue)) }
+        var displayName: String { L(rawValue) }
 
         case copied = "複製"
         case viewed = "檢視"
@@ -58,11 +58,13 @@ struct SecurityLogEntry: Identifiable, Codable, Equatable {
         return Self.relativeFormatter.localizedString(for: timestamp, relativeTo: Date())
     }
 
-    private static let relativeFormatter: RelativeDateTimeFormatter = {
+    /// Rebuilt per call so the timestamps follow the app's language, not the device's.
+    private static var relativeFormatter: RelativeDateTimeFormatter {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .full
+        f.locale = LanguageStore.shared.locale
         return f
-    }()
+    }
 }
 
 // MARK: - Security Log Store

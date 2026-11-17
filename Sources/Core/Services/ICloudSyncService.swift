@@ -127,7 +127,8 @@ final class ICloudSyncService: ObservableObject {
             case .syncing: return L("同步中…")
             case .synced(let date):
                 let f = DateFormatter()
-                f.dateFormat = "M月d日 HH:mm"
+                f.locale = LanguageStore.shared.locale
+                f.setLocalizedDateFormatFromTemplate("MMMd HH:mm")
                 return L("上次同步 %@", f.string(from: date))
             case .failed(let why): return L("同步失敗：%@", why)
             }

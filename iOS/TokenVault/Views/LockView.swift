@@ -22,7 +22,7 @@ struct LockView: View {
                     Text("TokenVault")
                         .font(.system(size: 26, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
-                    Text("AES-256-GCM · 只留在這台裝置")
+                    Text(L("AES-256-GCM · 只留在這台裝置"))
                         .font(Theme.callout)
                         .foregroundStyle(Theme.textTertiary)
                 }
@@ -37,15 +37,15 @@ struct LockView: View {
                         HStack(spacing: 8) {
                             Image(systemName: app.auth.symbol)
                                 .font(.system(size: 15, weight: .semibold))
-                            Text(settings.biometricLock ? "以 \(app.auth.label) 解鎖" : "進入保險庫")
+                            Text(settings.biometricLock ? L("以 %@ 解鎖", app.auth.label) : L("進入保險庫"))
                                 .font(.system(size: 15, weight: .semibold))
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.onAccent)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
                         .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(Theme.accentGradient))
-                        .shadow(color: Theme.accent.opacity(0.35), radius: 18, y: 8)
+                        .shadow(color: Theme.accent.opacity(0.18), radius: 10, y: 4)
                     }
                     .pressable()
                     .disabled(asking)
@@ -57,7 +57,7 @@ struct LockView: View {
                             .foregroundStyle(Theme.danger)
                     }
 
-                    Text("密鑰以 AES-256-GCM 加密，金鑰存在鑰匙圈，永不上傳")
+                    Text(L("密鑰以 AES-256-GCM 加密，金鑰存在鑰匙圈，永不上傳"))
                         .font(Theme.caption)
                         .foregroundStyle(Theme.textSecondary)
                         .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ struct VaultMark: View {
 
             Circle()
                 .fill(Theme.accentGradient)
-                .shadow(color: Theme.accent.opacity(0.45), radius: 24, y: 10)
+                .shadow(color: Theme.accent.opacity(0.25), radius: 16, y: 6)
                 .overlay(
                     Circle().stroke(Color.white.opacity(0.28), lineWidth: 1)
                         .blur(radius: 0.6)
@@ -132,11 +132,11 @@ struct VaultMark: View {
             }
 
             Circle()
-                .fill(Color(hex: "#151024"))
+                .fill(Color(hex: "#041312"))
                 .frame(width: 13, height: 13)
                 .overlay(alignment: .top) {
                     Capsule()
-                        .fill(Color(hex: "#151024"))
+                        .fill(Color(hex: "#041312"))
                         .frame(width: 7, height: 20)
                         .offset(y: 13)
                 }

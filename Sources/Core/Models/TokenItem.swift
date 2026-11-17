@@ -19,7 +19,7 @@ enum TokenEnvironment: String, Codable, CaseIterable {
     }
     /// Localized label. `rawValue` is both the lookup key and the persisted value, so the
     /// Chinese source string doubles as the key for `Localizable.strings`.
-    var displayName: String { String(localized: String.LocalizationValue(rawValue)) }
+    var displayName: String { L(rawValue) }
     var icon: String {
         switch self {
         case .development: return "hammer.fill"

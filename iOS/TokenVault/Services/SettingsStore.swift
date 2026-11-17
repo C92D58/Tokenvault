@@ -6,9 +6,9 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .system: return "跟隨系統"
-        case .light: return "淺色"
-        case .dark: return "深色"
+        case .system: return L("跟隨系統")
+        case .light: return L("淺色")
+        case .dark: return L("深色")
         }
     }
     var colorScheme: ColorScheme? {
@@ -72,10 +72,10 @@ final class SettingsStore: ObservableObject {
     }
 
     var autoLockLabel: String {
-        Self.autoLockChoices.first { $0.seconds == autoLockSeconds }?.label ?? "自訂"
+        Self.autoLockChoices.first { $0.seconds == autoLockSeconds }.map { L($0.label) } ?? L("自訂")
     }
 
     var clipboardLabel: String {
-        Self.clipboardChoices.first { $0.seconds == clipboardClearSeconds }?.label ?? "自訂"
+        Self.clipboardChoices.first { $0.seconds == clipboardClearSeconds }.map { L($0.label) } ?? L("自訂")
     }
 }

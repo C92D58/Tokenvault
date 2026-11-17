@@ -22,8 +22,8 @@ enum NotificationService {
         // Notify for already-expired tokens (once)
         for token in expired {
             let content = UNMutableNotificationContent()
-            content.title = "Token 已過期"
-            content.body = "「\(token.name)」已經過期，請更新。"
+            content.title = L("Token 已過期")
+            content.body = L("「%@」已經過期，請更新。", token.name)
             content.sound = .default
             let request = UNNotificationRequest(
                 identifier: "expired-\(token.id.uuidString)",
@@ -38,8 +38,8 @@ enum NotificationService {
             guard let expiry = token.expiresAt else { continue }
 
             let content = UNMutableNotificationContent()
-            content.title = "Token 即將到期"
-            content.body = "「\(token.name)」將於 \(expiry.formatted(date: .abbreviated, time: .omitted)) 到期"
+            content.title = L("Token 即將到期")
+            content.body = L("「%@」將於 %@ 到期", token.name, expiry.formatted(date: .abbreviated, time: .omitted))
 
             // Fire 1 day before expiry (but not in the past)
             let fireDate = Calendar.current.date(byAdding: .day, value: -1, to: expiry) ?? expiry

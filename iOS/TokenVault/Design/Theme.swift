@@ -3,55 +3,68 @@ import UIKit
 
 /// One palette, resolved per appearance.
 ///
-/// Violet is the brand: the accent marks what is selected, what is live, what was just copied.
-/// Everything else is ink on a layered neutral — a warm off-white by day, near-black at night —
-/// so a screens-worth of secrets still reads quietly.
+/// The ground is neutral black and bright cyan is the brand: the accent marks what is selected,
+/// what is live, what was just copied. Everything else is ink on layered greys — near-white by
+/// day, near-black at night — so a screens-worth of secrets still reads quietly. Cyan is spent
+/// sparingly; a screen normally carries exactly one of it.
 enum Theme {
 
     // MARK: - Accent
 
-    static let accent = Color(red: 0.60, green: 0.47, blue: 0.98)          // #9A78FA
-    static let accentDeep = Color(red: 0.44, green: 0.32, blue: 0.87)
-    static let accentSoft = Color(red: 0.60, green: 0.47, blue: 0.98, opacity: 0.14)
+    /// Brand accent. Light appearance needs a deeper value to stay legible on paper; dark gets
+    /// the bright cyan the mark is built from.
+    static let accent = adaptive(light: UIColor(red: 0.043, green: 0.478, blue: 0.447, alpha: 1),  // #0B7A72
+                                 dark: UIColor(red: 0.208, green: 0.882, blue: 0.815, alpha: 1))   // #35E1D0
+    /// The literal brand cyan — glows, blooms and fills that never sit on paper.
+    static let accentBright = Color(red: 0.208, green: 0.882, blue: 0.815)                          // #35E1D0
+    static let accentDeep = Color(red: 0.027, green: 0.404, blue: 0.376)                            // #076760
+    static let accentSoft = Color(red: 0.208, green: 0.882, blue: 0.815, opacity: 0.14)
+
+    /// Ink that sits ON the bright gradient — white disappears on cyan, petrol does not.
+    static let onAccent = Color(red: 0.016, green: 0.075, blue: 0.071)                              // #041312
 
     static let accentGradient = LinearGradient(
-        colors: [Color(red: 0.70, green: 0.58, blue: 1.00), Color(red: 0.42, green: 0.30, blue: 0.88)],
+        colors: [Color(red: 0.361, green: 0.937, blue: 0.878), Color(red: 0.051, green: 0.596, blue: 0.557)],
         startPoint: .topLeading, endPoint: .bottomTrailing)
 
     // MARK: - Surfaces
+    //
+    // The ground is neutral black, not a tinted one: a page of secrets should read as ink on a
+    // dark sheet, and a teal ground made everything look washed. Cyan is spent only where it
+    // means something — see the accent above.
 
     static func adaptive(light: UIColor, dark: UIColor) -> Color {
         Color(UIColor { $0.userInterfaceStyle == .dark ? dark : light })
     }
 
-    static let background = adaptive(light: UIColor(white: 0.965, alpha: 1),
-                                     dark: UIColor(white: 0.035, alpha: 1))
-    static let backgroundGlow = adaptive(light: UIColor(red: 0.90, green: 0.88, blue: 1.0, alpha: 1),
-                                         dark: UIColor(red: 0.10, green: 0.08, blue: 0.20, alpha: 1))
+    static let background = adaptive(light: UIColor(red: 0.965, green: 0.965, blue: 0.969, alpha: 1),
+                                     dark: UIColor(red: 0.024, green: 0.024, blue: 0.027, alpha: 1))
+    static let backgroundGlow = adaptive(light: UIColor(red: 0.937, green: 0.937, blue: 0.945, alpha: 1),
+                                         dark: UIColor(red: 0.086, green: 0.086, blue: 0.094, alpha: 1))
     /// Cards and list rows.
     static let surface = adaptive(light: .white,
-                                  dark: UIColor(white: 0.085, alpha: 1))
+                                  dark: UIColor(red: 0.078, green: 0.078, blue: 0.086, alpha: 1))
     /// A step above a card: value panels, insets, selected chips.
-    static let surfaceRaised = adaptive(light: UIColor(white: 0.945, alpha: 1),
-                                        dark: UIColor(white: 0.125, alpha: 1))
-    static let surfaceDeep = adaptive(light: UIColor(white: 0.915, alpha: 1),
-                                      dark: UIColor(white: 0.06, alpha: 1))
+    static let surfaceRaised = adaptive(light: UIColor(red: 0.937, green: 0.937, blue: 0.945, alpha: 1),
+                                        dark: UIColor(red: 0.110, green: 0.110, blue: 0.122, alpha: 1))
+    static let surfaceDeep = adaptive(light: UIColor(red: 0.902, green: 0.902, blue: 0.914, alpha: 1),
+                                      dark: UIColor(red: 0.043, green: 0.043, blue: 0.051, alpha: 1))
 
     // MARK: - Lines
 
     static let hairline = adaptive(light: UIColor(white: 0, alpha: 0.09),
-                                   dark: UIColor(white: 1, alpha: 0.13))
+                                   dark: UIColor(white: 1, alpha: 0.10))
     static let hairlineStrong = adaptive(light: UIColor(white: 0, alpha: 0.16),
-                                         dark: UIColor(white: 1, alpha: 0.24))
+                                         dark: UIColor(white: 1, alpha: 0.18))
 
     // MARK: - Ink
     // Light needs more ink than dark needs white: a grey that reads on black vanishes on paper.
 
-    static let textPrimary = adaptive(light: UIColor(white: 0.08, alpha: 1),
-                                      dark: UIColor(white: 1, alpha: 0.96))
-    static let textSecondary = adaptive(light: UIColor(white: 0.08, alpha: 0.72),
-                                        dark: UIColor(white: 1, alpha: 0.70))
-    static let textTertiary = adaptive(light: UIColor(white: 0.08, alpha: 0.56),
+    static let textPrimary = adaptive(light: UIColor(white: 0.07, alpha: 1),
+                                      dark: UIColor(white: 1, alpha: 0.97))
+    static let textSecondary = adaptive(light: UIColor(white: 0.07, alpha: 0.74),
+                                        dark: UIColor(white: 1, alpha: 0.72))
+    static let textTertiary = adaptive(light: UIColor(white: 0.07, alpha: 0.56),
                                        dark: UIColor(white: 1, alpha: 0.54))
 
     // MARK: - Semantics
@@ -122,7 +135,7 @@ enum Theme {
 // MARK: - Hex
 
 extension Color {
-    /// `Color(hex: "#9A78FA")` — also accepts a bare `9A78FA`.
+    /// `Color(hex: "#35E1D0")` — also accepts a bare `35E1D0`.
     init(hex: String) {
         let cleaned = hex.trimmingCharacters(in: CharacterSet(charactersIn: "# "))
         var value: UInt64 = 0

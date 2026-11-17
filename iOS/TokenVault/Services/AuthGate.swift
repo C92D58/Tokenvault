@@ -21,7 +21,7 @@ final class AuthGate: ObservableObject {
         case .faceID: return "Face ID"
         case .touchID: return "Touch ID"
         case .opticID: return "Optic ID"
-        default: return "裝置密碼"
+        default: return L("裝置密碼")
         }
     }
 
@@ -46,7 +46,7 @@ final class AuthGate: ObservableObject {
         do {
             let ok = try await context.evaluatePolicy(.deviceOwnerAuthentication,
                                                       localizedReason: reason)
-            await MainActor.run { self.lastFailure = ok ? nil : "驗證失敗" }
+            await MainActor.run { self.lastFailure = ok ? nil : L("驗證失敗") }
             return ok
         } catch {
             await MainActor.run { self.lastFailure = error.localizedDescription }

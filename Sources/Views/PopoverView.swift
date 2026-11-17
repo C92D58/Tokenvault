@@ -31,7 +31,7 @@ struct PopoverView: View {
                             )
                         Image(systemName: "key.horizontal.fill")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(DS.Color.onAccent)
                     }
                     Text("TokenVault")
                         .font(.system(size: 13, weight: .bold))

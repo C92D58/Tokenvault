@@ -56,11 +56,11 @@ struct ToolsView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("工具")
+            Text(L("工具"))
                 .font(Theme.title)
                 .foregroundStyle(Theme.textPrimary)
                 .accessibilityIdentifier("tools.title")
-            Text("產生、解碼、檢查 — 全部在這台裝置上完成")
+            Text(L("產生、解碼、檢查 — 全部在這台裝置上完成"))
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
         }
@@ -89,7 +89,7 @@ struct ToolsView: View {
                 .accessibilityIdentifier("tools.generated")
 
             HStack(spacing: Theme.Space.xs) {
-                Text("長度")
+                Text(L("長度"))
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
                 Slider(value: $length, in: 8...64, step: 1)
@@ -162,7 +162,7 @@ struct ToolsView: View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             cardTitle("JWT 解碼", symbol: "ticket")
 
-            TextField("貼上 JWT（eyJ…）", text: $jwtInput, axis: .vertical)
+            TextField(L("貼上 JWT（eyJ…）"), text: $jwtInput, axis: .vertical)
                 .font(Theme.monoSmall)
                 .foregroundStyle(Theme.textPrimary)
                 .textInputAutocapitalization(.never)
@@ -181,7 +181,7 @@ struct ToolsView: View {
                         Haptics.success()
                     } else {
                         decoded = nil
-                        jwtMessage = "這不是有效的 JWT（需三段以 . 分隔的 base64url）"
+                        jwtMessage = L("這不是有效的 JWT（需三段以 . 分隔的 base64url）")
                         Haptics.warning()
                     }
                 }
@@ -209,7 +209,7 @@ struct ToolsView: View {
                     HStack(alignment: .top, spacing: Theme.Space.s) {
                         Text(claim.key)
                             .font(Theme.monoSmall)
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(Theme.textSecondary)
                             .frame(width: 88, alignment: .leading)
                         Text(claim.value)
                             .font(Theme.monoSmall)
@@ -228,7 +228,7 @@ struct ToolsView: View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             cardTitle("Token 健康檢查", symbol: "stethoscope")
 
-            Text("對 GitHub、OpenAI、Cloudflare 實際發出一次驗證請求，確認密鑰仍然有效。只在你按下按鈕時才會連網。")
+            Text(L("對 GitHub、OpenAI、Cloudflare 實際發出一次驗證請求，確認密鑰仍然有效。只在你按下按鈕時才會連網。"))
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -291,7 +291,7 @@ struct ToolsView: View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             cardTitle("重複密鑰", symbol: "square.on.square.dashed")
 
-            Text("同一個值存了兩份，通常代表輪換沒做完。")
+            Text(L("同一個值存了兩份，通常代表輪換沒做完。"))
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
 
@@ -303,7 +303,7 @@ struct ToolsView: View {
 
             if scanned {
                 if duplicates.isEmpty {
-                    Text("沒有重複的密鑰")
+                    Text(L("沒有重複的密鑰"))
                         .font(Theme.caption)
                         .foregroundStyle(Theme.success)
                 } else {
@@ -334,7 +334,7 @@ struct ToolsView: View {
         HStack(spacing: 7) {
             Image(systemName: symbol)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.textSecondary)
             Text(L(title))
                 .font(Theme.heading)
                 .foregroundStyle(Theme.textPrimary)

@@ -23,7 +23,7 @@ enum JWTDecoder {
         }
 
         var expiryLabel: String {
-            guard let expiresAt else { return "無 exp 宣告" }
+            guard let expiresAt else { return L("無 exp 宣告") }
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy/MM/dd HH:mm"
             return formatter.string(from: expiresAt)

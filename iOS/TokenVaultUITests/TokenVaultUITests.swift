@@ -13,7 +13,10 @@ final class TokenVaultUITests: XCTestCase {
         // Pin the UI language: the suite queries Chinese labels, so it must not depend on how the
         // simulator or the host Mac is configured. English is covered by the shared strings file.
         var args = ["-uiTestReset", "-uiTestUnlocked",
-                    "-AppleLanguages", "(zh-Hant)", "-AppleLocale", "zh_Hant_TW"]
+                    "-AppleLanguages", "(zh-Hant)", "-AppleLocale", "zh_Hant_TW",
+                    // The app has its own language switch; pin it so a previous run's choice
+                    // cannot turn the labels these tests query into English.
+                    "-tv.language", "system"]
         if seed { args.append("-uiTestSeed") }
         app.launchArguments = args
         app.launch()
@@ -40,6 +43,55 @@ final class TokenVaultUITests: XCTestCase {
             usleep(300_000)
         }
         XCTFail("tab \(name) never became hittable")
+    }
+
+
+    // MARK: - Language
+
+    /// The switch lives in the app, not in iOS Settings: picking English must relabel the whole
+    /// UI on the spot, and picking Chinese must put it back.
+    func testLanguageSwitchesInsideTheApp() {
+        let app = launchApp()
+        openTab(app, "設定")
+
+        let languageRow = app.descendants(matching: .any)["settings.language"].firstMatch
+        XCTAssertTrue(languageRow.waitForExistence(timeout: 10), "the language row should exist")
+        languageRow.tap()
+
+        let english = app.buttons["English"].firstMatch.exists
+            ? app.buttons["English"].firstMatch
+            : app.menuItems["English"].firstMatch
+        XCTAssertTrue(english.waitForExistence(timeout: 6), "the menu should offer English")
+        english.tap()
+
+        // The settings screen stays put and comes back in English.
+        XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 8),
+                      "the settings screen should be English right after the switch")
+        // Section labels are drawn uppercased, so check the row copy instead.
+        XCTAssertTrue(app.staticTexts["Unlock with biometrics"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.staticTexts["Import secrets"].exists)
+        XCTAssertTrue(app.staticTexts["APPEARANCE"].exists)
+
+        // And back, so the suite and the next launch start in Chinese again. The tree was
+        // re-identified a moment ago, so the row can swallow the first tap while it settles —
+        // retry instead of failing on a rebuilt view.
+        let rowAgain = app.descendants(matching: .any)["settings.language"].firstMatch
+        XCTAssertTrue(rowAgain.waitForExistence(timeout: 8))
+        var switchedBack = false
+        for _ in 0..<4 {
+            rowAgain.tap()
+            let chinese = app.buttons["繁體中文"].firstMatch.exists
+                ? app.buttons["繁體中文"].firstMatch
+                : app.menuItems["繁體中文"].firstMatch
+            if chinese.waitForExistence(timeout: 3) {
+                chinese.tap()
+                switchedBack = true
+                break
+            }
+        }
+        XCTAssertTrue(switchedBack, "the language menu should reopen after the switch")
+        XCTAssertTrue(app.staticTexts["設定"].waitForExistence(timeout: 8),
+                      "the settings screen should be Chinese again")
     }
 
     // MARK: - Vault

@@ -8,6 +8,7 @@ struct SettingsView: View {
     @EnvironmentObject private var toast: ToastCenter
     @ObservedObject private var icloudBackup = ICloudBackupService.shared
     @ObservedObject private var icloudSync = ICloudSyncService.shared
+    @ObservedObject private var languageStore = LanguageStore.shared
 
     @State private var showingImport = false
     @State private var showingFolderPicker = false
@@ -51,9 +52,9 @@ struct SettingsView: View {
                       defaultFilename: exportFormat.filename) { result in
             switch result {
             case .success:
-                toast.show("已匯出 \(exportFormat.label)", symbol: "square.and.arrow.up", tint: Theme.accent)
+                toast.show(L("已匯出 %@", exportFormat.label), symbol: "square.and.arrow.up", tint: Theme.accent)
             case .failure(let error):
-                toast.show("匯出失敗：\(error.localizedDescription)",
+                toast.show(L("匯出失敗：%@", error.localizedDescription),
                            symbol: "exclamationmark.triangle.fill", tint: Theme.danger)
             }
             exportDocument = nil
@@ -64,11 +65,11 @@ struct SettingsView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("設定")
+            Text(L("設定"))
                 .font(Theme.title)
                 .foregroundStyle(Theme.textPrimary)
                 .accessibilityIdentifier("settings.title")
-            Text("裝置、安全與資料")
+            Text(L("裝置、安全與資料"))
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
         }
@@ -85,6 +86,23 @@ struct SettingsView: View {
                              selection: Binding(
                                 get: { AppearanceMode.allCases.firstIndex(of: settings.appearance) ?? 0 },
                                 set: { settings.appearance = AppearanceMode.allCases[$0] }))
+
+            Menu {
+                ForEach(AppLanguage.allCases) { language in
+                    Button(language.nativeName) { languageStore.select(language) }
+                }
+            } label: {
+                SettingsRow(symbol: "globe", title: "語言",
+                            detail: "介面語言，切換後立即生效") {
+                    HStack(spacing: 6) {
+                        Text(languageStore.language.nativeName)
+                            .font(Theme.callout)
+                            .foregroundStyle(Theme.textSecondary)
+                        Chevron()
+                    }
+                }
+            }
+            .accessibilityIdentifier("settings.language")
         }
         .cardSurface(padding: Theme.Space.m)
     }
@@ -105,7 +123,7 @@ struct SettingsView: View {
 
             Menu {
                 ForEach(SettingsStore.autoLockChoices, id: \.seconds) { choice in
-                    Button(choice.label) { settings.autoLockSeconds = choice.seconds }
+                    Button(L(choice.label)) { settings.autoLockSeconds = choice.seconds }
                 }
             } label: {
                 SettingsRow(symbol: "lock.badge.clock", title: "離開後自動鎖定",
@@ -117,7 +135,7 @@ struct SettingsView: View {
 
             Menu {
                 ForEach(SettingsStore.clipboardChoices, id: \.seconds) { choice in
-                    Button(choice.label) { settings.clipboardClearSeconds = choice.seconds }
+                    Button(L(choice.label)) { settings.clipboardClearSeconds = choice.seconds }
                 }
             } label: {
                 SettingsRow(symbol: "doc.on.clipboard", title: "剪貼板自動清除",
@@ -176,7 +194,7 @@ struct SettingsView: View {
                     Button {
                         prepareExport(format)
                     } label: {
-                        Label(format.isPlaintext ? "\(format.label)（明文）" : format.label,
+                        Label(format.isPlaintext ? L("%@（明文）", format.label) : format.label,
                               systemImage: format.isPlaintext ? "exclamationmark.triangle" : "lock.doc")
                     }
                 }
@@ -192,7 +210,7 @@ struct SettingsView: View {
                 showingTrash = true
             } label: {
                 SettingsRow(symbol: "trash", title: "垃圾桶",
-                            detail: vault.trashedTokens.isEmpty ? "空" : "\(vault.trashedTokens.count) 個項目 · 30 天後自動清除") {
+                            detail: vault.trashedTokens.isEmpty ? L("空") : L("%lld 個項目 · 30 天後自動清除", vault.trashedTokens.count)) {
                     Chevron()
                 }
             }
@@ -201,7 +219,7 @@ struct SettingsView: View {
 
             SettingsRow(symbol: "internaldrive", title: "儲存位置",
                         detail: "本機加密儲存；iCloud 另存加密同步檔") {
-                Text("本機")
+                Text(L("本機"))
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -234,9 +252,9 @@ struct SettingsView: View {
                 } label: {
                     SettingsRow(symbol: "arrow.triangle.2.circlepath", title: "立即同步",
                                 detail: "與 iCloud 上的其他裝置合併") {
-                        Text("同步")
+                        Text(L("同步"))
                             .font(Theme.caption)
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(Theme.textSecondary)
                     }
                 }
                 .buttonStyle(.plain)
@@ -251,7 +269,7 @@ struct SettingsView: View {
                                     : "App 容器 · 檔案 App 未必列出，可改用 iCloud Drive 資料夾") {
                         Text(usingCustomFolder ? "更改" : "選擇")
                             .font(Theme.caption)
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(Theme.textSecondary)
                     }
                 }
                 .buttonStyle(.plain)
@@ -264,9 +282,9 @@ struct SettingsView: View {
                     } label: {
                         SettingsRow(symbol: "arrow.uturn.backward", title: "改用 App 容器",
                                     detail: "回到 App 自己的 iCloud 資料夾") {
-                            Text("還原")
+                            Text(L("還原"))
                                 .font(Theme.caption)
-                                .foregroundStyle(Theme.accent)
+                                .foregroundStyle(Theme.textSecondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -314,7 +332,7 @@ struct SettingsView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .stroke(Theme.hairlineStrong, lineWidth: 1)
                     )
-                    .shadow(color: .black.opacity(0.16), radius: 8, y: 3)
+                    .shadow(color: .black.opacity(0.06), radius: 5, y: 2)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("TokenVault")
                         .font(Theme.cardTitle)
@@ -346,8 +364,8 @@ struct SettingsView: View {
 
     private var footnote: some View {
         VStack(spacing: 4) {
-            Text("零知識：Token 值以 AES-256-GCM 加密後才寫入磁碟，金鑰存放於這台裝置的鑰匙圈。")
-            Text("沒有伺服器、沒有分析、沒有任何追蹤。")
+            Text(L("零知識：Token 值以 AES-256-GCM 加密後才寫入磁碟，金鑰存放於這台裝置的鑰匙圈。"))
+            Text(L("沒有伺服器、沒有分析、沒有任何追蹤。"))
         }
         .font(Theme.caption)
         .foregroundStyle(Theme.textTertiary)

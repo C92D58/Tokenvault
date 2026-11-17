@@ -37,51 +37,34 @@ extension View {
             background(Circle().fill(fallback))
         }
     }
-
-    @ViewBuilder
-    func glassRounded(_ radius: CGFloat,
-                      tint: Color? = nil,
-                      interactive: Bool = true,
-                      fallback: Color = Theme.surface) -> some View {
-        if #available(iOS 26.0, *) {
-            glassEffect(glassMaterial(tint: tint, interactive: interactive),
-                        in: .rect(cornerRadius: radius, style: .continuous))
-        } else {
-            background(RoundedRectangle(cornerRadius: radius, style: .continuous).fill(fallback))
-        }
-    }
 }
 
 // MARK: - Surfaces
 
 /// The one card treatment in the app: a rounded rect on the surface colour, a single hairline,
 /// and a shadow soft enough to suggest depth without drawing attention to itself.
+///
+/// Deliberately **not** Liquid Glass. Glass samples whatever sits behind it, so every card in a
+/// `ScrollView` re-samples the backdrop on each drag and the page appears to drift under the
+/// finger. Glass stays on chrome — the tab bar, the floating add button, the toast, the segmented
+/// lens — where the material is a covering, not a page of content.
 struct CardSurface: ViewModifier {
     var radius: CGFloat = Theme.Radius.card
     var padding: CGFloat = Theme.Space.m
     var raised = false
 
     func body(content: Content) -> some View {
-        // iOS 26+: real Liquid Glass, so cards refract the bloom behind them. Older systems keep
-        // the flat surface + hairline, which is the same silhouette without the material cost.
-        if #available(iOS 26.0, *) {
-            content
-                .padding(padding)
-                .glassEffect(.regular, in: .rect(cornerRadius: radius, style: .continuous))
-                .shadow(color: .black.opacity(0.10), radius: 12, y: 5)
-        } else {
-            content
-                .padding(padding)
-                .background(
-                    RoundedRectangle(cornerRadius: radius, style: .continuous)
-                        .fill(raised ? Theme.surfaceRaised : Theme.surface)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: radius, style: .continuous)
-                        .stroke(Theme.hairline, lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
-        }
+        content
+            .padding(padding)
+            .background(
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .fill(raised ? Theme.surfaceRaised : Theme.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .stroke(Theme.hairline, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 }
 
@@ -106,12 +89,14 @@ struct PressableStyle: ButtonStyle {
     }
 }
 
-/// A quiet screen background: the flat base plus one violet bloom off the top corner.
+/// A quiet screen background: flat black with one soft light off the top corner. Neutral on
+/// purpose — a tinted ground turns every card green and spends the accent before anything is
+/// selected.
 struct ScreenBackground: View {
     var body: some View {
         ZStack(alignment: .top) {
             Theme.background
-            RadialGradient(colors: [Theme.backgroundGlow.opacity(0.55), .clear],
+            RadialGradient(colors: [Theme.backgroundGlow.opacity(0.45), .clear],
                            center: .topTrailing, startRadius: 8, endRadius: 420)
                 .frame(height: 420)
         }
@@ -256,7 +241,7 @@ struct SlidingSegmented: View {
             shape
                 .fill(Theme.textPrimary.opacity(0.10))
                 .overlay(Capsule().stroke(.white.opacity(0.18), lineWidth: 0.8))
-                .shadow(color: .black.opacity(0.16), radius: 4, y: 1)
+                .shadow(color: .black.opacity(0.10), radius: 3, y: 1)
                 .matchedGeometryEffect(id: "segment", in: namespace)
         }
     }
@@ -306,7 +291,14 @@ struct SearchField: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .glassRounded(Theme.Radius.control, interactive: false)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                .fill(Theme.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                .stroke(Theme.hairline, lineWidth: 1)
+        )
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
                 .stroke(focused ? Theme.accent.opacity(0.5) : .clear, lineWidth: 1)
@@ -332,14 +324,16 @@ struct FilterChip: View {
                 }
                 Text(L(title)).font(.system(size: 12.5, weight: isOn ? .semibold : .medium))
             }
-            .foregroundStyle(isOn ? Color.white : Theme.textSecondary)
+            .foregroundStyle(isOn ? Theme.onAccent : Theme.textSecondary)
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(
                 Capsule().fill(isOn ? AnyShapeStyle(Theme.accentGradient)
-                                    : AnyShapeStyle(Color.clear))
+                                    : AnyShapeStyle(Theme.surface))
             )
-            .glassCapsule(tint: isOn ? nil : nil, interactive: !isOn)
+            .overlay(
+                Capsule().stroke(isOn ? Color.clear : Theme.hairline, lineWidth: 1)
+            )
         }
         .pressable()
         .accessibilityIdentifier("filter.\(title)")
@@ -389,7 +383,7 @@ struct SettingsRow<Trailing: View>: View {
     let symbol: String
     let title: String
     var detail: String?
-    var tint: Color = Theme.accent
+    var tint: Color = Theme.textSecondary
     @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
@@ -426,12 +420,12 @@ struct EmptyState: View {
         VStack(spacing: Theme.Space.s) {
             Image(systemName: symbol)
                 .font(.system(size: 30, weight: .light))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.textTertiary)
                 .padding(.bottom, 2)
             Text(L(title))
                 .font(Theme.heading)
                 .foregroundStyle(Theme.textPrimary)
-            Text(message)
+            Text(L(message))
                 .font(Theme.callout)
                 .foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)
@@ -440,7 +434,7 @@ struct EmptyState: View {
                 Button(action: action.handler) {
                     Text(action.title)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.onAccent)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 9)
                         .background(Capsule().fill(Theme.accentGradient))
@@ -455,7 +449,7 @@ struct EmptyState: View {
     }
 }
 
-/// Primary action: full-width, violet, one per screen at most.
+/// Primary action: full-width, cyan, one per screen at most.
 struct PrimaryButton: View {
     let title: String
     var symbol: String?
@@ -471,7 +465,7 @@ struct PrimaryButton: View {
                 if let symbol { Image(systemName: symbol).font(.system(size: 13, weight: .semibold)) }
                 Text(L(title)).font(.system(size: 14, weight: .semibold))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Theme.onAccent)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(tint))
@@ -498,7 +492,14 @@ struct SecondaryButton: View {
             .foregroundStyle(destructive ? Theme.danger : Theme.textPrimary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
-            .glassRounded(14, tint: destructive ? Theme.danger.opacity(0.55) : nil)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(destructive ? Theme.danger.opacity(0.12) : Theme.surfaceRaised)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(destructive ? Theme.danger.opacity(0.30) : Theme.hairline, lineWidth: 1)
+            )
         }
         .pressable()
     }

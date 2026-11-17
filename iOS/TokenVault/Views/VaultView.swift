@@ -54,7 +54,7 @@ struct VaultView: View {
     private var header: some View {
         HStack(alignment: .top, spacing: Theme.Space.s) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("保險庫")
+                Text(L("保險庫"))
                     .font(Theme.title)
                     .foregroundStyle(Theme.textPrimary)
                     .accessibilityIdentifier("vault.title")
@@ -63,11 +63,11 @@ struct VaultView: View {
                     Text(L("%lld 個密鑰", vault.activeTokens.count))
                     if !vault.favorites.isEmpty {
                         Circle().fill(Theme.textTertiary).frame(width: 2.5, height: 2.5)
-                        Text("\(vault.favorites.count) 收藏")
+                        Text(L("%lld 收藏", vault.favorites.count))
                     }
                     if !vault.expiring.isEmpty {
                         Circle().fill(Theme.textTertiary).frame(width: 2.5, height: 2.5)
-                        Text("\(vault.expiring.count) 待處理")
+                        Text(L("%lld 待處理", vault.expiring.count))
                             .foregroundStyle(Theme.warning)
                     }
                 }
@@ -85,12 +85,12 @@ struct VaultView: View {
                     Button {
                         showingImport = true
                     } label: {
-                        Label("匯入備份…", systemImage: "square.and.arrow.down")
+                        Label(L("匯入備份…"), systemImage: "square.and.arrow.down")
                     }
                     Button {
                         showingTrash = true
                     } label: {
-                        Label(vault.trashedTokens.isEmpty ? "垃圾桶" : "垃圾桶（\(vault.trashedTokens.count)）",
+                        Label(vault.trashedTokens.isEmpty ? L("垃圾桶") : L("垃圾桶（%lld）", vault.trashedTokens.count),
                               systemImage: "trash")
                     }
                     Divider()
@@ -111,10 +111,10 @@ struct VaultView: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.onAccent)
                         .frame(width: 40, height: 40)
                         .glassCircle(tint: Theme.accent.opacity(0.75), fallback: Theme.accent)
-                        .shadow(color: Theme.accent.opacity(0.35), radius: 10, y: 4)
+                        .shadow(color: Theme.accent.opacity(0.18), radius: 8, y: 3)
                 }
                 .pressable()
                 .accessibilityIdentifier("vault.add")
@@ -177,12 +177,12 @@ struct VaultView: View {
                             ? "試試 tag:、provider: 或 cat: 這類篩選語法。"
                             : "換個分類，或把密鑰加進這個分類。")
                 if isSearching {
-                    Button("清除搜尋條件") {
+                    Button(L("清除搜尋條件")) {
                         query = ""
                         filter = .all
                     }
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.textSecondary)
                 }
             }
         } else {
@@ -199,7 +199,7 @@ struct VaultView: View {
                             Button {
                                 copy(token)
                             } label: {
-                                Label("複製", systemImage: "doc.on.doc")
+                                Label(L("複製"), systemImage: "doc.on.doc")
                             }
                             .tint(Theme.accent)
                         }
@@ -208,30 +208,30 @@ struct VaultView: View {
                                 vault.trash(token)
                                 toast.show("已移到垃圾桶", symbol: "trash.fill", tint: Theme.warning)
                             } label: {
-                                Label("刪除", systemImage: "trash")
+                                Label(L("刪除"), systemImage: "trash")
                             }
                             Button {
                                 vault.toggleFavorite(token)
                             } label: {
-                                Label(token.isFavorite ? "取消收藏" : "收藏", systemImage: "star")
+                                Label(token.isFavorite ? L("取消收藏") : L("收藏"), systemImage: "star")
                             }
                             .tint(Theme.warning)
                         }
                         .contextMenu {
-                            Button { copy(token) } label: { Label("複製密鑰", systemImage: "doc.on.doc") }
-                            Button { editingToken = token } label: { Label("編輯", systemImage: "pencil") }
+                            Button { copy(token) } label: { Label(L("複製密鑰"), systemImage: "doc.on.doc") }
+                            Button { editingToken = token } label: { Label(L("編輯"), systemImage: "pencil") }
                             Button { vault.toggleFavorite(token) } label: {
-                                Label(token.isFavorite ? "取消收藏" : "收藏", systemImage: "star")
+                                Label(token.isFavorite ? L("取消收藏") : L("收藏"), systemImage: "star")
                             }
                             Divider()
                             Button(role: .destructive) {
                                 vault.trash(token)
                                 toast.show("已移到垃圾桶", symbol: "trash.fill", tint: Theme.warning)
-                            } label: { Label("移到垃圾桶", systemImage: "trash") }
+                            } label: { Label(L("移到垃圾桶"), systemImage: "trash") }
                         }
                 }
 
-                // Keeps the last card clear of the floating tab bar.
+                // Keeps the last row clear of the floating tab bar.
                 Color.clear
                     .frame(height: 64)
                     .listRowInsets(EdgeInsets())
@@ -257,8 +257,8 @@ struct VaultView: View {
                                      clearAfter: settings.clipboardClearSeconds)
         vault.recordUse(token)
         let note = settings.clipboardClearSeconds > 0
-            ? "已複製 · \(settings.clipboardClearSeconds) 秒後自動清除"
-            : "已複製密鑰"
+            ? L("已複製 · %lld 秒後自動清除", settings.clipboardClearSeconds)
+            : L("已複製密鑰")
         toast.show(note, symbol: "doc.on.doc.fill", tint: Theme.accent)
     }
 }

@@ -200,7 +200,7 @@ struct MainView: View {
                 .frame(width: 24, height: 24)
             Image(systemName: "key.horizontal.fill")
                 .font(.system(size: 11, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(DS.Color.onAccent)
         }
     }
 

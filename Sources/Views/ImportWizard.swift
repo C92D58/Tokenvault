@@ -78,7 +78,7 @@ struct ImportWizard: View {
                         .font(.system(size: 11, weight: .bold)).foregroundColor(.white)
                 } else if step == index {
                     Circle().fill(DS.Color.accent).frame(width: 24, height: 24)
-                    Text("\(index + 1)").font(.system(size: 11, weight: .bold)).foregroundColor(.white)
+                    Text("\(index + 1)").font(.system(size: 11, weight: .bold)).foregroundColor(DS.Color.onAccent)
                 } else {
                     Circle().stroke(.secondary.opacity(0.3), lineWidth: 2).frame(width: 24, height: 24)
                     Text("\(index + 1)").font(.system(size: 11)).foregroundColor(.secondary.opacity(0.4))

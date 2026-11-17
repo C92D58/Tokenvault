@@ -81,26 +81,26 @@ struct TokenEditorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("取消") { dismiss() }
+                    Button(L("取消")) { dismiss() }
                         .foregroundStyle(Theme.textSecondary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("儲存", action: save)
+                    Button(L("儲存"), action: save)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(canSave ? Theme.accent : Theme.textTertiary)
                         .disabled(!canSave)
                 }
             }
-            .alert("新增群組", isPresented: $showingNewGroup) {
-                TextField("群組名稱", text: $newGroupName)
-                Button("建立") {
+            .alert(L("新增群組"), isPresented: $showingNewGroup) {
+                TextField(L("群組名稱"), text: $newGroupName)
+                Button(L("建立")) {
                     let trimmed = newGroupName.trimmingCharacters(in: .whitespaces)
                     guard !trimmed.isEmpty else { return }
                     let group = vault.createGroup(named: trimmed)
                     groupID = group.id
                     newGroupName = ""
                 }
-                Button("取消", role: .cancel) { newGroupName = "" }
+                Button(L("取消"), role: .cancel) { newGroupName = "" }
             }
         }
     }
@@ -117,7 +117,7 @@ struct TokenEditorView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text("值")
+                    Text(L("值"))
                         .font(Theme.caption)
                         .foregroundStyle(Theme.textTertiary)
                     Spacer()
@@ -127,9 +127,9 @@ struct TokenEditorView: View {
                             Haptics.tap()
                         }
                     } label: {
-                        Label("貼上", systemImage: "doc.on.clipboard")
+                        Label(L("貼上"), systemImage: "doc.on.clipboard")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(Theme.textSecondary)
                     }
                     .buttonStyle(.plain)
 
@@ -138,7 +138,7 @@ struct TokenEditorView: View {
                     } label: {
                         Image(systemName: revealed ? "eye.slash" : "eye")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(Theme.textSecondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("editor.reveal")
@@ -146,9 +146,9 @@ struct TokenEditorView: View {
 
                 Group {
                     if revealed {
-                        TextField("貼上或輸入密鑰", text: $value, axis: .vertical)
+                        TextField(L("貼上或輸入密鑰"), text: $value, axis: .vertical)
                     } else {
-                        SecureField("貼上或輸入密鑰", text: $value)
+                        SecureField(L("貼上或輸入密鑰"), text: $value)
                     }
                 }
                 .font(Theme.mono)
@@ -164,7 +164,7 @@ struct TokenEditorView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("環境")
+                Text(L("環境"))
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
                 SlidingSegmented(items: TokenEnvironment.allCases.map(\.rawValue), selection: $envIndex)
@@ -183,7 +183,7 @@ struct TokenEditorView: View {
                     providerLocked = false
                     detectProvider()
                 } label: {
-                    Label("自動偵測", systemImage: "sparkles")
+                    Label(L("自動偵測"), systemImage: "sparkles")
                 }
                 Divider()
                 ForEach(TokenProvider.allCases, id: \.self) { item in
@@ -213,7 +213,7 @@ struct TokenEditorView: View {
 
             MenuRow(title: "群組", symbol: "folder.fill", tint: Theme.textSecondary,
                     value: vault.group(for: groupID)?.name ?? "未分類") {
-                Button("未分類") { groupID = nil }
+                Button(L("未分類")) { groupID = nil }
                 if !vault.groups.isEmpty { Divider() }
                 ForEach(vault.groups) { group in
                     Button(group.name) { groupID = group.id }
@@ -222,7 +222,7 @@ struct TokenEditorView: View {
                 Button {
                     showingNewGroup = true
                 } label: {
-                    Label("新增群組…", systemImage: "plus")
+                    Label(L("新增群組…"), systemImage: "plus")
                 }
             }
         }
@@ -234,7 +234,7 @@ struct TokenEditorView: View {
             SectionLabel("其他")
 
             Toggle(isOn: $hasExpiry.animation(Theme.Motion.snap)) {
-                Text("設定到期日")
+                Text(L("設定到期日"))
                     .font(Theme.body)
                     .foregroundStyle(Theme.textPrimary)
             }
@@ -250,10 +250,10 @@ struct TokenEditorView: View {
                             text: $tagsText, identifier: "editor.tags")
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("備註")
+                Text(L("備註"))
                     .font(Theme.caption)
                     .foregroundStyle(Theme.textTertiary)
-                TextField("用途、權限範圍、負責人…", text: $note, axis: .vertical)
+                TextField(L("用途、權限範圍、負責人…"), text: $note, axis: .vertical)
                     .font(Theme.body)
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(2...5)
@@ -329,7 +329,7 @@ private struct EditorTextField: View {
             Text(L(label))
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
-            TextField(placeholder, text: $text)
+            TextField(L(placeholder), text: $text)
                 .font(Theme.body)
                 .foregroundStyle(Theme.textPrimary)
                 .autocorrectionDisabled()
@@ -345,7 +345,7 @@ private struct EditorTextField: View {
 private struct MenuRow<Content: View>: View {
     let title: String
     let symbol: String
-    var tint: Color = Theme.accent
+    var tint: Color = Theme.textSecondary
     let value: String
     @ViewBuilder var content: () -> Content
 

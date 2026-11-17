@@ -40,12 +40,12 @@ struct ImportSheet: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
-            .navigationTitle("匯入密鑰")
+            .navigationTitle(L("匯入密鑰"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
-                        .foregroundStyle(Theme.accent)
+                    Button(L("完成")) { dismiss() }
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
         }
@@ -58,7 +58,7 @@ struct ImportSheet: View {
                 let outcome = vault.importFile(at: url)
                 finish(outcome)
             case .failure(let error):
-                report = VaultStore.ImportReport(failure: "選擇檔案失敗：\(error.localizedDescription)")
+                report = VaultStore.ImportReport(failure: L("選擇檔案失敗：%@", error.localizedDescription))
             }
         }
     }
@@ -67,7 +67,7 @@ struct ImportSheet: View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             SectionLabel("從檔案匯入")
 
-            Text("支援 macOS 版匯出的加密 JSON 備份、.env 環境檔，以及 CSV（名稱,值,備註,環境）。")
+            Text(L("支援 macOS 版匯出的加密 JSON 備份、.env 環境檔，以及 CSV（名稱,值,備註,環境）。"))
                 .font(Theme.callout)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -77,7 +77,7 @@ struct ImportSheet: View {
             }
             .accessibilityIdentifier("import.pickFile")
 
-            Text("來自其他裝置的加密備份無法在這裡解密 — 那需要該裝置鑰匙圈裡的金鑰。這種情況請改用 .env 或 CSV 匯入。")
+            Text(L("來自其他裝置的加密備份無法在這裡解密 — 那需要該裝置鑰匙圈裡的金鑰。這種情況請改用 .env 或 CSV 匯入。"))
                 .font(Theme.caption)
                 .foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)

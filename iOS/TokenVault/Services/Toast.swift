@@ -16,7 +16,7 @@ final class ToastCenter: ObservableObject {
     func show(_ text: String, symbol: String = "checkmark.circle.fill", tint: Color = Theme.success) {
         dismissWork?.cancel()
         withAnimation(Theme.Motion.snap) {
-            current = Toast(text: text, symbol: symbol, tint: tint)
+            current = Toast(text: L(text), symbol: symbol, tint: tint)
         }
         let work = DispatchWorkItem { [weak self] in
             withAnimation(.easeOut(duration: 0.22)) { self?.current = nil }
@@ -52,7 +52,7 @@ struct ToastHost: View {
                     Color.clear.glassCapsule()
                         .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
                 )
-                .shadow(color: .black.opacity(0.18), radius: 18, y: 8)
+                .shadow(color: .black.opacity(0.10), radius: 12, y: 5)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .padding(.bottom, 96)
                 .allowsHitTesting(false)
