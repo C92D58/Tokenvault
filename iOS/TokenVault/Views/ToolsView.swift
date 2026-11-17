@@ -43,7 +43,9 @@ struct ToolsView: View {
                         duplicateCard
                     }
                     .padding(.horizontal, Theme.inset)
-                    .padding(.bottom, 110)
+                    // Same as settings: the floating tab bar supplies its own bottom inset, so 110 pt
+                    // here only produced a dead band under the last card.
+                    .padding(.bottom, Theme.Space.xl)
                 }
                 .scrollDismissesKeyboard(.interactively)
             }

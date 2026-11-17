@@ -233,6 +233,36 @@ final class TokenVaultUITests: XCTestCase {
                                  "the last card must end above the floating tab bar")
     }
 
+    /// The settings and tools pages are plain `ScrollView`s, and their bottom padding was cut from
+    /// 110 pt to `Theme.Space.xl`. That is only safe while the floating tab bar supplies its own
+    /// content inset, so it gets the same frame measurement as the vault list: scroll to the end and
+    /// require the last card's bottom edge to sit above the bar.
+    func testToolsAndSettingsClearTheFloatingTabBar() {
+        let app = launchApp()
+        openTab(app, "工具")
+        XCTAssertTrue(app.staticTexts["tools.title"].waitForExistence(timeout: 10))
+        for _ in 0..<6 { app.swipeUp(velocity: .slow) }
+        usleep(700_000)
+
+        let tabBar = app.tabBars.firstMatch
+        let scan = app.buttons["掃描"].firstMatch
+        XCTAssertTrue(scan.exists, "the duplicate-key card's last button should be reachable")
+        XCTAssertTrue(tabBar.exists)
+        XCTAssertLessThanOrEqual(scan.frame.maxY, tabBar.frame.minY + 1,
+                                 "the tools page's last card must end above the floating tab bar")
+
+        openTab(app, "設定")
+        XCTAssertTrue(app.staticTexts["settings.title"].waitForExistence(timeout: 10))
+        for _ in 0..<6 { app.swipeUp(velocity: .slow) }
+        usleep(700_000)
+
+        // The About card ends with the privacy-policy row; it is the last thing on the page.
+        let privacy = app.staticTexts["privacy.wahsun.org"].firstMatch
+        XCTAssertTrue(privacy.exists, "the About card should be reachable")
+        XCTAssertLessThanOrEqual(privacy.frame.maxY, tabBar.frame.minY + 1,
+                                 "the settings page's last card must end above the floating tab bar")
+    }
+
     // MARK: - Screenshot tour (attachments, not assertions)
 
     func testScreenshotTour() {
