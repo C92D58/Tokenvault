@@ -484,7 +484,10 @@ extension AppDelegate {
                             NotificationCenter.default.post(name: .showSettingsSyncTab, object: nil)
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
                                 shot("05-settings.png", self.settingsWindow)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { NSApp.terminate(nil) }
+                                // `NSApp.terminate` runs the app's shutdown path, which can stop on
+                                // a keychain or iCloud alert and leave the capture hanging; the
+                                // shots are already on disk by now, so leave immediately.
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { exit(0) }
                             }
                         }
                     }

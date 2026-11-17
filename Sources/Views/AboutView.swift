@@ -34,12 +34,12 @@ struct AboutView: View {
                 .tracking(-0.4)
                 .padding(.top, 14)
 
-            Text("版本 \(appVersion)")
+            Text(L("版本 %@", appVersion))
                 .font(.system(size: 11.5))
                 .foregroundStyle(.secondary)
                 .padding(.top, 3)
 
-            Text("開發者的 API 密鑰保險庫")
+            Text(L("開發者的 API 密鑰保險庫"))
                 .font(.system(size: 12.5))
                 .foregroundStyle(.secondary)
                 .padding(.top, 10)
@@ -66,17 +66,19 @@ struct AboutView: View {
                     .frame(height: 12)
 
                 HStack(spacing: 6) {
-                    Text("開發者")
+                    Text(L("開發者"))
                         .foregroundStyle(.secondary)
                     Link("WAHSUN", destination: URL(string: "https://wahsun.org")!)
                         .accessibilityIdentifier("developerLink")
                     Text("·")
                         .foregroundStyle(.tertiary)
-                    Link("隱私政策", destination: URL(string: "https://privacy.wahsun.org/")!)
+                    Link(L("隱私政策"), destination: URL(string: "https://privacy.wahsun.org/")!)
                     Text("·")
                         .foregroundStyle(.tertiary)
-                    Text("MIT 授權")
-                        .foregroundStyle(.tertiary)
+                    // Every item in this line is a link or none is: a grey "MIT 授權" next to two
+                    // blue links reads as a disabled control.
+                    Link(L("MIT 授權"),
+                         destination: URL(string: "https://github.com/C92D58/Tokenvault/blob/main/LICENSE")!)
                 }
                 .font(.system(size: 11))
                 // Tab 鍵走過連結時 macOS 會畫一圈藍色 focus ring；整頁其他控制項都關了，這裡也關，
@@ -85,7 +87,7 @@ struct AboutView: View {
             }
             .padding(.bottom, 22)
         }
-        .frame(width: 420, height: 476)
+        .frame(width: 420, height: 436)
         .background(
             ZStack {
                 Rectangle().fill(.regularMaterial)
