@@ -59,7 +59,10 @@ xcodebuild test-without-building -project "$ROOT/TokenVault.xcodeproj" -scheme T
     -resultBundlePath "$RESULT" ${EXTRA[@]+"${EXTRA[@]}"} > "$LOG" 2>&1 &
 RUNNER=$!
 
-( sleep "${TV_TEST_TIMEOUT:-1500}"; kill -TERM "$RUNNER" 2>/dev/null ) &
+# The watchdog's stdout is /dev/null so its `sleep` cannot hold the caller's pipe open: the
+# subshell is killed on the happy path, but the `sleep` grandchild survives and `bash verify.sh |
+# tail` then waits the full timeout for EOF.
+( sleep "${TV_TEST_TIMEOUT:-1500}"; kill -TERM "$RUNNER" 2>/dev/null ) >/dev/null 2>&1 &
 WATCHDOG=$!
 
 wait "$RUNNER" || true
@@ -68,14 +71,20 @@ wait "$WATCHDOG" 2>/dev/null || true
 
 grep -E "Test Case .*(passed|failed)" "$LOG" || true
 
-if grep -Eq "Executed [0-9]+ tests?, with ([0-9]+ tests? skipped and )?0 failures" "$LOG"; then
+# The verdict comes from the run's own marker plus the absence of failed cases. Matching
+# "Executed N tests, with 0 failures" was wrong: every suite prints that line for itself, so a
+# 2-failure run still carried a passing per-suite line and the script reported ✅ PASS.
+TOTAL="$(grep -E '^[[:space:]]*Executed [0-9]+ tests?' "$LOG" | tail -1 | sed 's/^[[:space:]]*//')"
+if grep -q "\*\* TEST EXECUTE SUCCEEDED \*\*" "$LOG" \
+    && ! grep -q "Test Case .* failed (" "$LOG"; then
     echo ""
-    echo "✅ PASS — $(grep -E 'Executed [0-9]+ tests' "$LOG" | tail -1)"
+    echo "✅ PASS — $TOTAL"
     echo "   screenshots: xcrun xcresulttool export attachments --path $RESULT --output-path /tmp/tv-shots"
     exit 0
 fi
 
 echo ""
 echo "❌ FAIL — see $LOG"
+echo "   ${TOTAL:-no summary line — the run did not finish}"
 grep -E "error:|XCTAssert|Test Case .* failed" "$LOG" | head -20
 exit 1
