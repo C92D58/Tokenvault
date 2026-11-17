@@ -40,6 +40,13 @@ echo "== project $PROJECT ($SCHEME, team $TEAM) =="
 echo "== device  ${UDID:-none} =="
 
 echo "== building for the device =="
+# Icons are generated, never hand-edited. The device path used to skip this, so a build could ship
+# whatever artwork happened to be on disk — regenerate both the icon and the in-app About mark.
+swift "$ROOT/../scripts/make-icon.swift" ios \
+    "$ROOT/TokenVault/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png" > /dev/null
+swift "$ROOT/../scripts/make-icon.swift" ios /tmp/tv-appmark-1024.png > /dev/null
+sips -z 512 512 /tmp/tv-appmark-1024.png \
+    --out "$ROOT/TokenVault/Resources/Assets.xcassets/AppMark.imageset/AppMark.png" > /dev/null
 # iCloud Drive restores files with fresh/odd timestamps, which can make the build system skip an
 # edited file; touch sources so the build always matches the disk.
 find "$ROOT/TokenVault" "$ROOT/../Sources/Core" -name "*.swift" -exec touch {} + 2>/dev/null || true

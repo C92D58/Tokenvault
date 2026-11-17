@@ -39,6 +39,11 @@ echo "== device: $DEVICE ($UDID) =="
 echo "== generating app icon =="
 swift "$ROOT/../scripts/make-icon.swift" ios \
     "$ROOT/TokenVault/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png" > /dev/null
+# The About card renders the same artwork from AppMark.imageset (512 px). Regenerating only the
+# home-screen icon left the About card showing a palette two revisions old.
+swift "$ROOT/../scripts/make-icon.swift" ios /tmp/tv-appmark-1024.png > /dev/null
+sips -z 512 512 /tmp/tv-appmark-1024.png \
+    --out "$ROOT/TokenVault/Resources/Assets.xcassets/AppMark.imageset/AppMark.png" > /dev/null
 
 # iCloud Drive restores files with fresh/odd timestamps, which makes the build system believe
 # an edited file is already compiled. Touching the sources forces the rebuild to match the disk.

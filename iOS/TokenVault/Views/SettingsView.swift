@@ -36,10 +36,11 @@ struct SettingsView: View {
                         securityCard
                         dataCard
                         aboutCard
-                        footnote
                     }
                     .padding(.horizontal, Theme.inset)
-                    .padding(.bottom, 110)
+                    // The tab bar brings its own safe-area inset; 110 pt on top of it left a dead
+                    // band under the About card once the footnote was removed.
+                    .padding(.bottom, Theme.Space.xl)
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -362,16 +363,6 @@ struct SettingsView: View {
         .cardSurface(padding: Theme.Space.m)
     }
 
-    private var footnote: some View {
-        VStack(spacing: 4) {
-            Text(L("零知識：Token 值以 AES-256-GCM 加密後才寫入磁碟，金鑰存放於這台裝置的鑰匙圈。"))
-            Text(L("沒有伺服器、沒有分析、沒有任何追蹤。"))
-        }
-        .font(Theme.caption)
-        .foregroundStyle(Theme.textTertiary)
-        .multilineTextAlignment(.center)
-        .padding(.top, Theme.Space.xs)
-    }
 }
 
 // MARK: - Small pieces
