@@ -90,7 +90,7 @@ com.apple.developer.ubiquity-kvstore-identifier = $(TeamIdentifierPrefix)$(CFBun
 產法（可重跑）：
 
 ```bash
-bash build.sh
+scripts/build-macos.sh
 .build/TokenVault.app/Contents/MacOS/TokenVault --capture-shots /tmp/tv-macshots
 swift scripts/make-macos-store-shots.swift /tmp/tv-macshots ~/Desktop/TokenVault-AppStore/macos
 ```
@@ -115,14 +115,16 @@ swift scripts/make-macos-store-shots.swift /tmp/tv-macshots ~/Desktop/TokenVault
 
 ### 4. 功能宣稱要與程式一致
 
-已不再宣稱 iCloud 同步。建議描述：
+iCloud Drive 雙向同步已實作並在真機驗證（`vault.tvsync` 以 AES-256-GCM 加密、金鑰存於 iCloud 鑰匙圈、逐 token 合併、刪除以 tombstone 傳播）。App Store 版本以正確 entitlements 簽名，可以宣稱同步；但**不可**宣稱任何自有雲端伺服器。注意：adhoc 簽名的本地／Release 版無法帶 iCloud entitlements，該版本會顯示「iCloud 不可用」，描述要區分這兩者。
 
-> 每個值以 AES-256-GCM 加密後才寫入磁碟，金鑰存放於裝置鑰匙圈，不上傳任何資料。支援 20 種服務商自動辨識、環境標籤、JWT 解碼、金鑰產生器、Token 健康檢查、重複密鑰掃描，以及本機稽核日誌。
+建議描述：
+
+> 每個值以 AES-256-GCM 加密後才寫入磁碟，金鑰存放於裝置鑰匙圈；可選用你的 iCloud Drive 在 Mac 與 iPhone 之間同步（內容加密、金鑰在你的 iCloud 鑰匙圈）。支援 20 種服務商自動辨識、環境標籤、JWT 解碼、金鑰產生器、Token 健康檢查、重複密鑰掃描，以及本機稽核日誌。
 
 ### 5. 每次發版自檢
 
 ```bash
-bash build.sh                            # macOS
+scripts/build-macos.sh                   # macOS
 cd iOS && ./verify.sh                    # 10 個 XCUITest 全綠
 cd iOS && ./build.sh                     # 模擬器
 cd iOS && ./scripts/install-device.sh    # 真機（usbmuxd 備援）

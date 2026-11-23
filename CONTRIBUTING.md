@@ -11,14 +11,15 @@ Thanks for your interest in contributing to TokenVault!
 xcode-select --install
 ```
 
-No Xcode project file is needed — the app is compiled directly by `build.sh` using `swiftc`.
+No Xcode project file is needed — the app is compiled directly by `scripts/build-macos.sh` using
+`swiftc`, and the version is stamped from `project.yml`.
 
 ## Building locally
 
 ```bash
 git clone https://github.com/C92D58/TokenVault.git
 cd TokenVault
-bash build.sh
+scripts/build-macos.sh
 ```
 
 The compiled app is at `.build/TokenVault.app`. To run it:
@@ -30,7 +31,7 @@ open .build/TokenVault.app
 To package a DMG (optional):
 
 ```bash
-bash build.sh && bash package.sh
+scripts/build-macos.sh && bash package.sh
 ```
 
 ## Submitting a Pull Request
@@ -38,7 +39,7 @@ bash build.sh && bash package.sh
 1. Fork the repository and clone it locally
 2. Create a branch: `git checkout -b feature/your-feature` or `fix/your-fix`
 3. Keep changes focused — one PR solves one problem
-4. Make sure `bash build.sh` succeeds and the app runs
+4. Make sure `scripts/build-macos.sh` succeeds and the app runs
 5. Open the PR with a short description of what changed and why
 
 ### Commit messages

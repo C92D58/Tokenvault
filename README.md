@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/UI-SwiftUI-orange.svg" alt="Built with SwiftUI">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen.svg" alt="Zero dependencies">
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+  <a href="https://github.com/C92D58/TokenVault/releases"><img src="https://img.shields.io/github/v/release/C92D58/TokenVault?label=release" alt="Latest release"></a>
 </p>
 
 TokenVault is an **API secret manager designed for developers**. Unlike a general-purpose password manager, TokenVault is built around what developers actually need: environment labels (dev / staging / prod), automatic provider detection, a built-in JWT decoder, one-click token generation, and menu-bar quick copy — all protected with **AES-256-GCM encryption**.
@@ -28,6 +29,16 @@ TokenVault is **free and open-source software**, released under the [MIT License
 - **Architecture:** Apple Silicon (arm64)
 - **iOS:** iOS 18.0 or later (iPhone, Xcode 26+ to build)
 - **Unlock:** Face ID / Touch ID (or device password)
+
+---
+
+## Screenshots
+
+![TokenVault vault window](docs/screenshots/main.jpg)
+
+| Lock screen | About |
+|---|---|
+| ![Lock screen](docs/screenshots/lock.jpg) | ![About panel](docs/screenshots/about.jpg) |
 
 ---
 
@@ -74,23 +85,36 @@ TokenVault is **free and open-source software**, released under the [MIT License
 ### 🎨 Native macOS experience
 
 - **Native SwiftUI interface** — smooth and light, no Electron shell
+- **Neutral black palette, one cyan accent** — the ground is greyscale, hairlines carry the structure, and the accent is spent only where something is selected or primary
+- **English and Traditional Chinese**, switchable in Settings and applied on the spot, no restart
 - **Dark mode** — system / dark / light
-- **macOS 26 Liquid Glass** — frosted materials, dynamic refraction
+- **macOS 26 Liquid Glass** — frosted materials on surfaces, the toast and the add button
+- **Pill tab bar, no focus rings** — page switching is plain buttons, so AppKit never draws its blue ring around a tab strip
+- **Draws its own lock mark**, and Touch ID asks by itself — there is no button to press
 - **SF Symbols animations** — bounce, pulse, replace and other native effects
 
 ---
 
 ## Installation
 
+### Download
+
+Download the latest `.dmg` from [Releases](https://github.com/C92D58/TokenVault/releases), open it, and drag `TokenVault.app` into `Applications`.
+
+Requires macOS 14 (Sonoma) or later on Apple Silicon. The release build is ad-hoc signed — there is no Developer ID certificate behind it — so the first launch is blocked: go to **System Settings → Privacy & Security** and click **Open Anyway**, or run `xattr -cr /Applications/TokenVault.app`.
+
+An ad-hoc signature cannot carry the iCloud entitlements, so **iCloud sync reports itself unavailable in the downloaded build**. Build it with your own signing team (below) to use sync.
+
 ### Build from source
 
 ```bash
 git clone https://github.com/C92D58/TokenVault.git
 cd TokenVault
-bash build.sh
+scripts/build-macos.sh     # swiftc → .build/TokenVault.app, version stamped from project.yml
+bash package.sh            # → .build/TokenVault-<version>.dmg
 ```
 
-The compiled `TokenVault.app` lands in `.build/`.
+The compiled `TokenVault.app` lands in `.build/`. `scripts/build-macos.sh` is the whole macOS build: no Xcode project, no third-party packages, and it stamps `CFBundleShortVersionString` from `project.yml` plus the commit count as the build number.
 
 ### Build the iOS app
 
@@ -103,12 +127,6 @@ cd iOS
 
 See [`iOS/README.md`](iOS/README.md) for the screens, the test list and how secrets move between
 the two builds.
-
-### Download
-
-Download the latest `.dmg` from [Releases](https://github.com/C92D58/TokenVault/releases), open it, and drag `TokenVault.app` into `Applications`.
-
-On first launch macOS may warn that the developer cannot be verified — go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 ---
 
@@ -178,11 +196,16 @@ TokenVault/
 │   ├── Services/         # macOS services (store, clipboard, settings, backup, auth)
 │   └── Views/            # macOS view layer (main screen, editor, settings, etc.)
 ├── iOS/                  # iOS app: Xcode project, views, UI-test suite, build scripts
-├── scripts/make-icon.swift  # one icon design, macOS + iOS framings
+├── scripts/
+│   ├── build-macos.sh    # macOS build: swiftc → .build/TokenVault.app
+│   ├── make-icon.swift   # one icon design, macOS + iOS framings
+│   └── make-macos-store-shots.swift
+├── docs/screenshots/     # README imagery
 ├── Assets.xcassets/      # app icons & color assets
-├── Resources/            # Info.plist, entitlements, .icns
-├── build.sh              # macOS build script
-└── package.sh            # DMG packaging script
+├── Resources/            # Info.plist, entitlements, .icns, privacy manifest
+├── project.yml           # xcodegen source for the signed macOS target
+├── package.sh            # DMG packaging (version read from project.yml)
+└── publish.sh            # build → sign → package → optional notarize
 ```
 
 ---
@@ -210,7 +233,7 @@ Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY
 All contributions are welcome — bug reports, feature suggestions, pull requests.
 
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR
-- Building locally is one command: `bash build.sh` (no Xcode project file, zero dependencies).
+- Building locally is one command: `scripts/build-macos.sh` (no Xcode project file, zero dependencies).
   That build is ad-hoc signed, so **iCloud sync reports itself unavailable** in it — macOS only
   grants `com.apple.developer.icloud-*` entitlements to a properly signed app.
 - For a signed macOS build with working iCloud sync: `xcodegen generate && xcodebuild -project
