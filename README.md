@@ -36,9 +36,9 @@ TokenVault is **free and open-source software**, released under the [MIT License
 
 ![TokenVault vault window](docs/screenshots/main.jpg)
 
-| Lock screen | About |
-|---|---|
-| ![Lock screen](docs/screenshots/lock.jpg) | ![About panel](docs/screenshots/about.jpg) |
+| Lock screen | About | Settings |
+|---|---|---|
+| ![Lock screen](docs/screenshots/lock.jpg) | ![About panel](docs/screenshots/about.jpg) | ![Settings](docs/screenshots/settings.jpg) |
 
 ---
 
