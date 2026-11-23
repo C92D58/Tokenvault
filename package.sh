@@ -4,7 +4,9 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 APP=".build/TokenVault.app"
-DMG_NAME="TokenVault-1.0"
+# Version comes from project.yml (single source of truth), TV_VERSION overrides.
+VERSION="${TV_VERSION:-$(sed -n 's/^[[:space:]]*MARKETING_VERSION:[[:space:]]*"\(.*\)".*/\1/p' project.yml | head -1)}"
+DMG_NAME="TokenVault-${VERSION:-1.0}"
 DMG_FILE=".build/${DMG_NAME}.dmg"
 STAGING=".build/dmg_staging"
 

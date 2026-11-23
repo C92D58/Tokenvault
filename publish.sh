@@ -24,7 +24,7 @@ fi
 
 # 2. Build and sign app
 echo "🔨 Compiling and signing $APP..."
-./build.sh
+bash scripts/build-macos.sh
 
 if [ "$SIGN_IDENTITY" != "-" ]; then
     echo "🔏 Re-signing with Developer ID: $SIGN_IDENTITY"
@@ -44,7 +44,8 @@ fi
 
 # 4. Optional Notarization (if Apple ID credentials configured)
 if [ "$SIGN_IDENTITY" != "-" ] && [ -n "${APPLE_ID:-}" ] && [ -n "${APPLE_TEAM_ID:-}" ]; then
-    DMG_FILE="$BUILD/TokenVault-1.0.dmg"
+    VERSION="${TV_VERSION:-$(sed -n 's/^[[:space:]]*MARKETING_VERSION:[[:space:]]*"\(.*\)".*/\1/p' project.yml | head -1)}"
+    DMG_FILE="$BUILD/TokenVault-${VERSION:-1.0}.dmg"
     echo "📦 Submitting DMG for Apple Notarization..."
     xcrun notarytool submit "$DMG_FILE" \
       --apple-id "$APPLE_ID" \

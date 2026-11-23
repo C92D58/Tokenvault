@@ -106,7 +106,7 @@ the two builds.
 
 ### Download
 
-Download the latest `TokenVault-1.0.dmg` from [Releases](https://github.com/C92D58/TokenVault/releases), open it, and drag `TokenVault.app` into `Applications`.
+Download the latest `.dmg` from [Releases](https://github.com/C92D58/TokenVault/releases), open it, and drag `TokenVault.app` into `Applications`.
 
 On first launch macOS may warn that the developer cannot be verified — go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
